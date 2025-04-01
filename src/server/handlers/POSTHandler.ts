@@ -1,3 +1,19 @@
+/*
+    Copyright (C) 2025 Kush Bisen (UGent - imec)
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 import { IncomingMessage, ServerResponse } from "http";
 import { ContainmentChecker } from "../../containment/ContainmentChecker";
 
@@ -49,7 +65,6 @@ export class POSTHandler {
     private static async handleContainment(parsedBody: any, response: ServerResponse) {
         const subquery = parsedBody.subquery;
         const superquery = parsedBody.superquery;
-        if (parsedBody.)
 
         const containmentChecker = new ContainmentChecker();
         // Log headers state for debugging, but avoid console.log in production
