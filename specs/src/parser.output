@@ -1,0 +1,3783 @@
+Grammar
+
+    0 $accept: Program $end
+
+    1 Program: Schema subquery_token SubQuery superquery_token SuperQuery
+    2        | Schema superquery_token SuperQuery subquery_token SubQuery
+
+    3 Schema: schema_token Decl TriplesBlock
+    4       | ε
+
+    5 SuperQuery: Query
+
+    6 SubQuery: Query
+
+    7 Query: Decl SelectClause DatasetClause WhereClause SolutionModifier LimitOffset ValuesClause
+
+    8 SubSelect: SelectClause WhereClause SolutionModifier
+
+    9 Decl: PrefixDecl
+
+   10 PrefixDecl: PrefixDecl prefix_token Prefix ':' iri_token
+   11           | ε
+
+   12 Prefix: str_token
+   13       | ε
+
+   14 SelectClause: select_token DistinctClause Selects
+
+   15 DistinctClause: distinct_token
+   16               | ε
+
+   17 Selects: Projections
+   18        | '*'
+
+   19 Projections: Projections Projection
+   20            | Projection
+
+   21 Projection: Var
+   22           | '(' Expression as_token Var ')'
+
+   23 Var: var_token
+
+   24 Expression: Expression '+' Expression
+   25           | Expression '-' Expression
+   26           | Expression '*' Expression
+   27           | Expression '/' Expression
+   28           | Expression '<' Expression
+   29           | Expression '>' Expression
+   30           | Expression '=' Expression
+   31           | Expression geq_token Expression
+   32           | Expression leq_token Expression
+   33           | Expression noteq_token Expression
+   34           | Expression and_token Expression
+   35           | Expression or_token Expression
+   36           | '!' Expression
+   37           | '(' Expression ')'
+   38           | BuiltInCall
+   39           | Var
+   40           | RDFLiteral
+   41           | IRIRef '(' Expression ')'
+   42           | IRIRef
+
+   43 DatasetClause: DatasetClause from_token IRIRef
+   44              | DatasetClause from_token named_token IRIRef
+   45              | ε
+
+   46 WhereClause: where_token GroupGraphPattern
+
+   47 GroupGraphPattern: '{' GroupGraphPatternSub '}'
+   48                  | '{' SubSelect '}'
+
+   49 GroupGraphPatternSub: TriplesBlock GroupGraphPatternSubS
+
+   50 GroupGraphPatternSubS: GraphPatternNotTriples TriplesBlock GroupGraphPatternSubS
+   51                      | ε
+
+   52 TriplesBlock: TriplesBlock '.' TriplesSameSubjectPath
+   53             | TriplesSameSubjectPath
+
+   54 TriplesSameSubjectPath: VarOrTerm PropertyListPathNotEmpty
+   55                       | ε
+
+   56 VarOrTerm: VarOrIri
+   57          | RDFLiteral
+
+   58 VarOrIri: var_token
+   59         | blank_node_token
+   60         | IRIRef
+
+   61 IRIRef: iri_token
+   62       | Prefix ':' str_token
+
+   63 RDFLiteral: string_token
+   64           | int_token
+
+   65 PropertyListPathNotEmpty: PropertyListPathNotEmpty ';' Verb ObjectList
+   66                         | Verb ObjectList
+
+   67 Verb: VarOrIri
+   68     | 'a'
+
+   69 ObjectList: ObjectList ',' Object
+   70           | Object
+
+   71 Object: VarOrTerm
+
+   72 GraphPatternNotTriples: GroupOrUnionGraphPattern
+   73                       | OptionalGraphPattern
+   74                       | MinusGraphPattern
+   75                       | Filter
+   76                       | GraphGraphPattern
+   77                       | Bind
+
+   78 GroupOrUnionGraphPattern: GroupOrUnionGraphPattern union_token GroupGraphPattern
+   79                         | GroupGraphPattern
+
+   80 OptionalGraphPattern: optional_token GroupGraphPattern
+
+   81 MinusGraphPattern: minus_token GroupGraphPattern
+
+   82 SolutionModifier: order_by_token OrderList
+   83                 | group_by_token GroupConditions
+   84                 | ε
+
+   85 LimitOffset: limit_token int_token offset_token int_token
+   86            | offset_token int_token limit_token int_token
+   87            | limit_token int_token
+   88            | offset_token int_token
+   89            | ε
+
+   90 OrderList: OrderList OrderElem
+   91          | OrderElem
+
+   92 OrderElem: desc_token '(' var_token ')'
+   93          | asc_token '(' var_token ')'
+   94          | var_token
+
+   95 Filter: filter_token '(' Expression ')'
+   96       | filter_token BuiltInCall
+
+   97 GroupConditions: GroupConditions GroupCondition
+   98                | GroupCondition
+
+   99 GroupCondition: var_token
+
+  100 BuiltInCall: regex_token '(' Expression ',' Expression ')'
+  101            | regex_token '(' Expression ',' Expression ',' Expression ')'
+  102            | builtin_str_token '(' Expression ')'
+  103            | round_token '(' Expression ')'
+  104            | abs_token '(' Expression ')'
+  105            | datatype_token '(' Expression ')'
+  106            | contains_token '(' Expression ',' Expression ')'
+  107            | lcase_token '(' Expression ')'
+  108            | is_literal_token '(' Expression ')'
+  109            | is_uri_token '(' Expression ')'
+  110            | bound_token '(' Var ')'
+
+  111 GraphGraphPattern: graph_token VarOrIri GroupGraphPattern
+
+  112 Bind: bind_token '(' Expression as_token Var ')'
+
+  113 ValuesClause: values_token Var '{' DataBlockValue '}'
+  114             | ε
+
+  115 DataBlockValue: DataBlockValue IRIRef
+  116               | IRIRef
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    '!' (33) 36
+    '(' (40) 22 37 41 92 93 95 100 101 102 103 104 105 106 107 108 109 110 112
+    ')' (41) 22 37 41 92 93 95 100 101 102 103 104 105 106 107 108 109 110 112
+    '*' (42) 18 26
+    '+' (43) 24
+    ',' (44) 69 100 101 106
+    '-' (45) 25
+    '.' (46) 52
+    '/' (47) 27
+    ':' (58) 10 62
+    ';' (59) 65
+    '<' (60) 28
+    '=' (61) 30
+    '>' (62) 29
+    'a' (97) 68
+    '{' (123) 47 48 113
+    '}' (125) 47 48 113
+    error (256)
+    select_token (258) 14
+    distinct_token (259) 15
+    where_token (260) 46
+    as_token (261) 22 112
+    union_token (262) 78
+    optional_token (263) 80
+    minus_token (264) 81
+    prefix_token (265) 10
+    schema_token (266) 3
+    superquery_token (267) 1 2
+    subquery_token (268) 1 2
+    limit_token (269) 85 86 87
+    from_token (270) 43 44
+    named_token (271) 44
+    order_by_token (272) 82
+    asc_token (273) 93
+    desc_token (274) 92
+    filter_token (275) 95 96
+    regex_token (276) 100 101
+    group_by_token (277) 83
+    and_token (278) 34
+    or_token (279) 35
+    graph_token (280) 111
+    builtin_str_token (281) 102
+    noteq_token (282) 33
+    bind_token (283) 112
+    round_token (284) 103
+    offset_token (285) 85 86 88
+    abs_token (286) 104
+    datatype_token (287) 105
+    values_token (288) 113
+    contains_token (289) 106
+    lcase_token (290) 107
+    is_literal_token (291) 108
+    is_uri_token (292) 109
+    bound_token (293) 110
+    var_token <s> (294) 23 58 92 93 94 99
+    iri_token <s> (295) 10 61
+    str_token <s> (296) 12 62
+    string_token <s> (297) 63
+    blank_node_token <s> (298) 59
+    int_token <i> (299) 64 85 86 87 88
+    geq_token (300) 31
+    leq_token (301) 32
+
+
+Nonterminals, with rules where they appear
+
+    $accept (64)
+        on left: 0
+    Program (65)
+        on left: 1 2
+        on right: 0
+    Schema (66)
+        on left: 3 4
+        on right: 1 2
+    SuperQuery <q> (67)
+        on left: 5
+        on right: 1 2
+    SubQuery <q> (68)
+        on left: 6
+        on right: 1 2
+    Query <q> (69)
+        on left: 7
+        on right: 5 6
+    SubSelect <p> (70)
+        on left: 8
+        on right: 48
+    Decl <m> (71)
+        on left: 9
+        on right: 3 7
+    PrefixDecl <m> (72)
+        on left: 10 11
+        on right: 9 10
+    Prefix <s> (73)
+        on left: 12 13
+        on right: 10 62
+    SelectClause <vb3> (74)
+        on left: 14
+        on right: 7 8
+    DistinctClause <b> (75)
+        on left: 15 16
+        on right: 14
+    Selects <v3> (76)
+        on left: 17 18
+        on right: 14
+    Projections <v3> (77)
+        on left: 19 20
+        on right: 17 19
+    Projection <e> (78)
+        on left: 21 22
+        on right: 19 20
+    Var <v> (79)
+        on left: 23
+        on right: 21 22 39 110 112 113
+    Expression <e> (80)
+        on left: 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42
+        on right: 22 24 25 26 27 28 29 30 31 32 33 34 35 36 37 41 95 100 101 102 103 104 105 106 107 108 109 112
+    DatasetClause <ss> (81)
+        on left: 43 44 45
+        on right: 7 43 44
+    WhereClause <p> (82)
+        on left: 46
+        on right: 7 8
+    GroupGraphPattern <p> (83)
+        on left: 47 48
+        on right: 46 78 79 80 81 111
+    GroupGraphPatternSub <p> (84)
+        on left: 49
+        on right: 47
+    GroupGraphPatternSubS <p> (85)
+        on left: 50 51
+        on right: 49 50
+    TriplesBlock <p> (86)
+        on left: 52 53
+        on right: 3 49 50 52
+    TriplesSameSubjectPath <p> (87)
+        on left: 54 55
+        on right: 52 53
+    VarOrTerm <v> (88)
+        on left: 56 57
+        on right: 54 71
+    VarOrIri <v> (89)
+        on left: 58 59 60
+        on right: 56 67 111
+    IRIRef <v> (90)
+        on left: 61 62
+        on right: 41 42 43 44 60 115 116
+    RDFLiteral <v> (91)
+        on left: 63 64
+        on right: 40 57
+    PropertyListPathNotEmpty <v2> (92)
+        on left: 65 66
+        on right: 54 65
+    Verb <v> (93)
+        on left: 67 68
+        on right: 65 66
+    ObjectList <v1> (94)
+        on left: 69 70
+        on right: 65 66 69
+    Object <v> (95)
+        on left: 71
+        on right: 69 70
+    GraphPatternNotTriples <p> (96)
+        on left: 72 73 74 75 76 77
+        on right: 50
+    GroupOrUnionGraphPattern <p> (97)
+        on left: 78 79
+        on right: 72 78
+    OptionalGraphPattern <p> (98)
+        on left: 80
+        on right: 73
+    MinusGraphPattern <p> (99)
+        on left: 81
+        on right: 74
+    SolutionModifier <vpvb> (100)
+        on left: 82 83 84
+        on right: 7 8
+    LimitOffset <pii> (101)
+        on left: 85 86 87 88 89
+        on right: 7
+    OrderList <vpvb> (102)
+        on left: 90 91
+        on right: 82 90
+    OrderElem <pvb> (103)
+        on left: 92 93 94
+        on right: 90 91
+    Filter <p> (104)
+        on left: 95 96
+        on right: 75
+    GroupConditions (105)
+        on left: 97 98
+        on right: 83 97
+    GroupCondition (106)
+        on left: 99
+        on right: 97 98
+    BuiltInCall <e> (107)
+        on left: 100 101 102 103 104 105 106 107 108 109 110
+        on right: 38 96
+    GraphGraphPattern <p> (108)
+        on left: 111
+        on right: 76
+    Bind <p> (109)
+        on left: 112
+        on right: 77
+    ValuesClause <v1> (110)
+        on left: 113 114
+        on right: 7
+    DataBlockValue <v1> (111)
+        on left: 115 116
+        on right: 113 115
+
+
+State 0
+
+    0 $accept: • Program $end
+
+    schema_token  shift, and go to state 1
+
+    $default  reduce using rule 4 (Schema)
+
+    Program  go to state 2
+    Schema   go to state 3
+
+
+State 1
+
+    3 Schema: schema_token • Decl TriplesBlock
+
+    $default  reduce using rule 11 (PrefixDecl)
+
+    Decl        go to state 4
+    PrefixDecl  go to state 5
+
+
+State 2
+
+    0 $accept: Program • $end
+
+    $end  shift, and go to state 6
+
+
+State 3
+
+    1 Program: Schema • subquery_token SubQuery superquery_token SuperQuery
+    2        | Schema • superquery_token SuperQuery subquery_token SubQuery
+
+    superquery_token  shift, and go to state 7
+    subquery_token    shift, and go to state 8
+
+
+State 4
+
+    3 Schema: schema_token Decl • TriplesBlock
+
+    var_token         shift, and go to state 9
+    iri_token         shift, and go to state 10
+    str_token         shift, and go to state 11
+    string_token      shift, and go to state 12
+    blank_node_token  shift, and go to state 13
+    int_token         shift, and go to state 14
+
+    ':'       reduce using rule 13 (Prefix)
+    $default  reduce using rule 55 (TriplesSameSubjectPath)
+
+    Prefix                  go to state 15
+    TriplesBlock            go to state 16
+    TriplesSameSubjectPath  go to state 17
+    VarOrTerm               go to state 18
+    VarOrIri                go to state 19
+    IRIRef                  go to state 20
+    RDFLiteral              go to state 21
+
+
+State 5
+
+    9 Decl: PrefixDecl •
+   10 PrefixDecl: PrefixDecl • prefix_token Prefix ':' iri_token
+
+    prefix_token  shift, and go to state 22
+
+    $default  reduce using rule 9 (Decl)
+
+
+State 6
+
+    0 $accept: Program $end •
+
+    $default  accept
+
+
+State 7
+
+    2 Program: Schema superquery_token • SuperQuery subquery_token SubQuery
+
+    $default  reduce using rule 11 (PrefixDecl)
+
+    SuperQuery  go to state 23
+    Query       go to state 24
+    Decl        go to state 25
+    PrefixDecl  go to state 5
+
+
+State 8
+
+    1 Program: Schema subquery_token • SubQuery superquery_token SuperQuery
+
+    $default  reduce using rule 11 (PrefixDecl)
+
+    SubQuery    go to state 26
+    Query       go to state 27
+    Decl        go to state 25
+    PrefixDecl  go to state 5
+
+
+State 9
+
+   58 VarOrIri: var_token •
+
+    $default  reduce using rule 58 (VarOrIri)
+
+
+State 10
+
+   61 IRIRef: iri_token •
+
+    $default  reduce using rule 61 (IRIRef)
+
+
+State 11
+
+   12 Prefix: str_token •
+
+    $default  reduce using rule 12 (Prefix)
+
+
+State 12
+
+   63 RDFLiteral: string_token •
+
+    $default  reduce using rule 63 (RDFLiteral)
+
+
+State 13
+
+   59 VarOrIri: blank_node_token •
+
+    $default  reduce using rule 59 (VarOrIri)
+
+
+State 14
+
+   64 RDFLiteral: int_token •
+
+    $default  reduce using rule 64 (RDFLiteral)
+
+
+State 15
+
+   62 IRIRef: Prefix • ':' str_token
+
+    ':'  shift, and go to state 28
+
+
+State 16
+
+    3 Schema: schema_token Decl TriplesBlock •
+   52 TriplesBlock: TriplesBlock • '.' TriplesSameSubjectPath
+
+    '.'  shift, and go to state 29
+
+    $default  reduce using rule 3 (Schema)
+
+
+State 17
+
+   53 TriplesBlock: TriplesSameSubjectPath •
+
+    $default  reduce using rule 53 (TriplesBlock)
+
+
+State 18
+
+   54 TriplesSameSubjectPath: VarOrTerm • PropertyListPathNotEmpty
+
+    var_token         shift, and go to state 9
+    iri_token         shift, and go to state 10
+    str_token         shift, and go to state 11
+    blank_node_token  shift, and go to state 13
+    'a'               shift, and go to state 30
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix                    go to state 15
+    VarOrIri                  go to state 31
+    IRIRef                    go to state 20
+    PropertyListPathNotEmpty  go to state 32
+    Verb                      go to state 33
+
+
+State 19
+
+   56 VarOrTerm: VarOrIri •
+
+    $default  reduce using rule 56 (VarOrTerm)
+
+
+State 20
+
+   60 VarOrIri: IRIRef •
+
+    $default  reduce using rule 60 (VarOrIri)
+
+
+State 21
+
+   57 VarOrTerm: RDFLiteral •
+
+    $default  reduce using rule 57 (VarOrTerm)
+
+
+State 22
+
+   10 PrefixDecl: PrefixDecl prefix_token • Prefix ':' iri_token
+
+    str_token  shift, and go to state 11
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix  go to state 34
+
+
+State 23
+
+    2 Program: Schema superquery_token SuperQuery • subquery_token SubQuery
+
+    subquery_token  shift, and go to state 35
+
+
+State 24
+
+    5 SuperQuery: Query •
+
+    $default  reduce using rule 5 (SuperQuery)
+
+
+State 25
+
+    7 Query: Decl • SelectClause DatasetClause WhereClause SolutionModifier LimitOffset ValuesClause
+
+    select_token  shift, and go to state 36
+
+    SelectClause  go to state 37
+
+
+State 26
+
+    1 Program: Schema subquery_token SubQuery • superquery_token SuperQuery
+
+    superquery_token  shift, and go to state 38
+
+
+State 27
+
+    6 SubQuery: Query •
+
+    $default  reduce using rule 6 (SubQuery)
+
+
+State 28
+
+   62 IRIRef: Prefix ':' • str_token
+
+    str_token  shift, and go to state 39
+
+
+State 29
+
+   52 TriplesBlock: TriplesBlock '.' • TriplesSameSubjectPath
+
+    var_token         shift, and go to state 9
+    iri_token         shift, and go to state 10
+    str_token         shift, and go to state 11
+    string_token      shift, and go to state 12
+    blank_node_token  shift, and go to state 13
+    int_token         shift, and go to state 14
+
+    ':'       reduce using rule 13 (Prefix)
+    $default  reduce using rule 55 (TriplesSameSubjectPath)
+
+    Prefix                  go to state 15
+    TriplesSameSubjectPath  go to state 40
+    VarOrTerm               go to state 18
+    VarOrIri                go to state 19
+    IRIRef                  go to state 20
+    RDFLiteral              go to state 21
+
+
+State 30
+
+   68 Verb: 'a' •
+
+    $default  reduce using rule 68 (Verb)
+
+
+State 31
+
+   67 Verb: VarOrIri •
+
+    $default  reduce using rule 67 (Verb)
+
+
+State 32
+
+   54 TriplesSameSubjectPath: VarOrTerm PropertyListPathNotEmpty •
+   65 PropertyListPathNotEmpty: PropertyListPathNotEmpty • ';' Verb ObjectList
+
+    ';'  shift, and go to state 41
+
+    $default  reduce using rule 54 (TriplesSameSubjectPath)
+
+
+State 33
+
+   66 PropertyListPathNotEmpty: Verb • ObjectList
+
+    var_token         shift, and go to state 9
+    iri_token         shift, and go to state 10
+    str_token         shift, and go to state 11
+    string_token      shift, and go to state 12
+    blank_node_token  shift, and go to state 13
+    int_token         shift, and go to state 14
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix      go to state 15
+    VarOrTerm   go to state 42
+    VarOrIri    go to state 19
+    IRIRef      go to state 20
+    RDFLiteral  go to state 21
+    ObjectList  go to state 43
+    Object      go to state 44
+
+
+State 34
+
+   10 PrefixDecl: PrefixDecl prefix_token Prefix • ':' iri_token
+
+    ':'  shift, and go to state 45
+
+
+State 35
+
+    2 Program: Schema superquery_token SuperQuery subquery_token • SubQuery
+
+    $default  reduce using rule 11 (PrefixDecl)
+
+    SubQuery    go to state 46
+    Query       go to state 27
+    Decl        go to state 25
+    PrefixDecl  go to state 5
+
+
+State 36
+
+   14 SelectClause: select_token • DistinctClause Selects
+
+    distinct_token  shift, and go to state 47
+
+    $default  reduce using rule 16 (DistinctClause)
+
+    DistinctClause  go to state 48
+
+
+State 37
+
+    7 Query: Decl SelectClause • DatasetClause WhereClause SolutionModifier LimitOffset ValuesClause
+
+    $default  reduce using rule 45 (DatasetClause)
+
+    DatasetClause  go to state 49
+
+
+State 38
+
+    1 Program: Schema subquery_token SubQuery superquery_token • SuperQuery
+
+    $default  reduce using rule 11 (PrefixDecl)
+
+    SuperQuery  go to state 50
+    Query       go to state 24
+    Decl        go to state 25
+    PrefixDecl  go to state 5
+
+
+State 39
+
+   62 IRIRef: Prefix ':' str_token •
+
+    $default  reduce using rule 62 (IRIRef)
+
+
+State 40
+
+   52 TriplesBlock: TriplesBlock '.' TriplesSameSubjectPath •
+
+    $default  reduce using rule 52 (TriplesBlock)
+
+
+State 41
+
+   65 PropertyListPathNotEmpty: PropertyListPathNotEmpty ';' • Verb ObjectList
+
+    var_token         shift, and go to state 9
+    iri_token         shift, and go to state 10
+    str_token         shift, and go to state 11
+    blank_node_token  shift, and go to state 13
+    'a'               shift, and go to state 30
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix    go to state 15
+    VarOrIri  go to state 31
+    IRIRef    go to state 20
+    Verb      go to state 51
+
+
+State 42
+
+   71 Object: VarOrTerm •
+
+    $default  reduce using rule 71 (Object)
+
+
+State 43
+
+   66 PropertyListPathNotEmpty: Verb ObjectList •
+   69 ObjectList: ObjectList • ',' Object
+
+    ','  shift, and go to state 52
+
+    $default  reduce using rule 66 (PropertyListPathNotEmpty)
+
+
+State 44
+
+   70 ObjectList: Object •
+
+    $default  reduce using rule 70 (ObjectList)
+
+
+State 45
+
+   10 PrefixDecl: PrefixDecl prefix_token Prefix ':' • iri_token
+
+    iri_token  shift, and go to state 53
+
+
+State 46
+
+    2 Program: Schema superquery_token SuperQuery subquery_token SubQuery •
+
+    $default  reduce using rule 2 (Program)
+
+
+State 47
+
+   15 DistinctClause: distinct_token •
+
+    $default  reduce using rule 15 (DistinctClause)
+
+
+State 48
+
+   14 SelectClause: select_token DistinctClause • Selects
+
+    var_token  shift, and go to state 54
+    '*'        shift, and go to state 55
+    '('        shift, and go to state 56
+
+    Selects      go to state 57
+    Projections  go to state 58
+    Projection   go to state 59
+    Var          go to state 60
+
+
+State 49
+
+    7 Query: Decl SelectClause DatasetClause • WhereClause SolutionModifier LimitOffset ValuesClause
+   43 DatasetClause: DatasetClause • from_token IRIRef
+   44              | DatasetClause • from_token named_token IRIRef
+
+    where_token  shift, and go to state 61
+    from_token   shift, and go to state 62
+
+    WhereClause  go to state 63
+
+
+State 50
+
+    1 Program: Schema subquery_token SubQuery superquery_token SuperQuery •
+
+    $default  reduce using rule 1 (Program)
+
+
+State 51
+
+   65 PropertyListPathNotEmpty: PropertyListPathNotEmpty ';' Verb • ObjectList
+
+    var_token         shift, and go to state 9
+    iri_token         shift, and go to state 10
+    str_token         shift, and go to state 11
+    string_token      shift, and go to state 12
+    blank_node_token  shift, and go to state 13
+    int_token         shift, and go to state 14
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix      go to state 15
+    VarOrTerm   go to state 42
+    VarOrIri    go to state 19
+    IRIRef      go to state 20
+    RDFLiteral  go to state 21
+    ObjectList  go to state 64
+    Object      go to state 44
+
+
+State 52
+
+   69 ObjectList: ObjectList ',' • Object
+
+    var_token         shift, and go to state 9
+    iri_token         shift, and go to state 10
+    str_token         shift, and go to state 11
+    string_token      shift, and go to state 12
+    blank_node_token  shift, and go to state 13
+    int_token         shift, and go to state 14
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix      go to state 15
+    VarOrTerm   go to state 42
+    VarOrIri    go to state 19
+    IRIRef      go to state 20
+    RDFLiteral  go to state 21
+    Object      go to state 65
+
+
+State 53
+
+   10 PrefixDecl: PrefixDecl prefix_token Prefix ':' iri_token •
+
+    $default  reduce using rule 10 (PrefixDecl)
+
+
+State 54
+
+   23 Var: var_token •
+
+    $default  reduce using rule 23 (Var)
+
+
+State 55
+
+   18 Selects: '*' •
+
+    $default  reduce using rule 18 (Selects)
+
+
+State 56
+
+   22 Projection: '(' • Expression as_token Var ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 79
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 57
+
+   14 SelectClause: select_token DistinctClause Selects •
+
+    $default  reduce using rule 14 (SelectClause)
+
+
+State 58
+
+   17 Selects: Projections •
+   19 Projections: Projections • Projection
+
+    var_token  shift, and go to state 54
+    '('        shift, and go to state 56
+
+    $default  reduce using rule 17 (Selects)
+
+    Projection  go to state 83
+    Var         go to state 60
+
+
+State 59
+
+   20 Projections: Projection •
+
+    $default  reduce using rule 20 (Projections)
+
+
+State 60
+
+   21 Projection: Var •
+
+    $default  reduce using rule 21 (Projection)
+
+
+State 61
+
+   46 WhereClause: where_token • GroupGraphPattern
+
+    '{'  shift, and go to state 84
+
+    GroupGraphPattern  go to state 85
+
+
+State 62
+
+   43 DatasetClause: DatasetClause from_token • IRIRef
+   44              | DatasetClause from_token • named_token IRIRef
+
+    named_token  shift, and go to state 86
+    iri_token    shift, and go to state 10
+    str_token    shift, and go to state 11
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix  go to state 15
+    IRIRef  go to state 87
+
+
+State 63
+
+    7 Query: Decl SelectClause DatasetClause WhereClause • SolutionModifier LimitOffset ValuesClause
+
+    order_by_token  shift, and go to state 88
+    group_by_token  shift, and go to state 89
+
+    $default  reduce using rule 84 (SolutionModifier)
+
+    SolutionModifier  go to state 90
+
+
+State 64
+
+   65 PropertyListPathNotEmpty: PropertyListPathNotEmpty ';' Verb ObjectList •
+   69 ObjectList: ObjectList • ',' Object
+
+    ','  shift, and go to state 52
+
+    $default  reduce using rule 65 (PropertyListPathNotEmpty)
+
+
+State 65
+
+   69 ObjectList: ObjectList ',' Object •
+
+    $default  reduce using rule 69 (ObjectList)
+
+
+State 66
+
+  100 BuiltInCall: regex_token • '(' Expression ',' Expression ')'
+  101            | regex_token • '(' Expression ',' Expression ',' Expression ')'
+
+    '('  shift, and go to state 91
+
+
+State 67
+
+  102 BuiltInCall: builtin_str_token • '(' Expression ')'
+
+    '('  shift, and go to state 92
+
+
+State 68
+
+  103 BuiltInCall: round_token • '(' Expression ')'
+
+    '('  shift, and go to state 93
+
+
+State 69
+
+  104 BuiltInCall: abs_token • '(' Expression ')'
+
+    '('  shift, and go to state 94
+
+
+State 70
+
+  105 BuiltInCall: datatype_token • '(' Expression ')'
+
+    '('  shift, and go to state 95
+
+
+State 71
+
+  106 BuiltInCall: contains_token • '(' Expression ',' Expression ')'
+
+    '('  shift, and go to state 96
+
+
+State 72
+
+  107 BuiltInCall: lcase_token • '(' Expression ')'
+
+    '('  shift, and go to state 97
+
+
+State 73
+
+  108 BuiltInCall: is_literal_token • '(' Expression ')'
+
+    '('  shift, and go to state 98
+
+
+State 74
+
+  109 BuiltInCall: is_uri_token • '(' Expression ')'
+
+    '('  shift, and go to state 99
+
+
+State 75
+
+  110 BuiltInCall: bound_token • '(' Var ')'
+
+    '('  shift, and go to state 100
+
+
+State 76
+
+   36 Expression: '!' • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 101
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 77
+
+   37 Expression: '(' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 102
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 78
+
+   39 Expression: Var •
+
+    $default  reduce using rule 39 (Expression)
+
+
+State 79
+
+   22 Projection: '(' Expression • as_token Var ')'
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    as_token     shift, and go to state 103
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+
+
+State 80
+
+   41 Expression: IRIRef • '(' Expression ')'
+   42           | IRIRef •
+
+    '('  shift, and go to state 116
+
+    $default  reduce using rule 42 (Expression)
+
+
+State 81
+
+   40 Expression: RDFLiteral •
+
+    $default  reduce using rule 40 (Expression)
+
+
+State 82
+
+   38 Expression: BuiltInCall •
+
+    $default  reduce using rule 38 (Expression)
+
+
+State 83
+
+   19 Projections: Projections Projection •
+
+    $default  reduce using rule 19 (Projections)
+
+
+State 84
+
+   47 GroupGraphPattern: '{' • GroupGraphPatternSub '}'
+   48                  | '{' • SubSelect '}'
+
+    select_token      shift, and go to state 36
+    var_token         shift, and go to state 9
+    iri_token         shift, and go to state 10
+    str_token         shift, and go to state 11
+    string_token      shift, and go to state 12
+    blank_node_token  shift, and go to state 13
+    int_token         shift, and go to state 14
+
+    ':'       reduce using rule 13 (Prefix)
+    $default  reduce using rule 55 (TriplesSameSubjectPath)
+
+    SubSelect               go to state 117
+    Prefix                  go to state 15
+    SelectClause            go to state 118
+    GroupGraphPatternSub    go to state 119
+    TriplesBlock            go to state 120
+    TriplesSameSubjectPath  go to state 17
+    VarOrTerm               go to state 18
+    VarOrIri                go to state 19
+    IRIRef                  go to state 20
+    RDFLiteral              go to state 21
+
+
+State 85
+
+   46 WhereClause: where_token GroupGraphPattern •
+
+    $default  reduce using rule 46 (WhereClause)
+
+
+State 86
+
+   44 DatasetClause: DatasetClause from_token named_token • IRIRef
+
+    iri_token  shift, and go to state 10
+    str_token  shift, and go to state 11
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix  go to state 15
+    IRIRef  go to state 121
+
+
+State 87
+
+   43 DatasetClause: DatasetClause from_token IRIRef •
+
+    $default  reduce using rule 43 (DatasetClause)
+
+
+State 88
+
+   82 SolutionModifier: order_by_token • OrderList
+
+    asc_token   shift, and go to state 122
+    desc_token  shift, and go to state 123
+    var_token   shift, and go to state 124
+
+    OrderList  go to state 125
+    OrderElem  go to state 126
+
+
+State 89
+
+   83 SolutionModifier: group_by_token • GroupConditions
+
+    var_token  shift, and go to state 127
+
+    GroupConditions  go to state 128
+    GroupCondition   go to state 129
+
+
+State 90
+
+    7 Query: Decl SelectClause DatasetClause WhereClause SolutionModifier • LimitOffset ValuesClause
+
+    limit_token   shift, and go to state 130
+    offset_token  shift, and go to state 131
+
+    $default  reduce using rule 89 (LimitOffset)
+
+    LimitOffset  go to state 132
+
+
+State 91
+
+  100 BuiltInCall: regex_token '(' • Expression ',' Expression ')'
+  101            | regex_token '(' • Expression ',' Expression ',' Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 133
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 92
+
+  102 BuiltInCall: builtin_str_token '(' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 134
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 93
+
+  103 BuiltInCall: round_token '(' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 135
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 94
+
+  104 BuiltInCall: abs_token '(' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 136
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 95
+
+  105 BuiltInCall: datatype_token '(' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 137
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 96
+
+  106 BuiltInCall: contains_token '(' • Expression ',' Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 138
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 97
+
+  107 BuiltInCall: lcase_token '(' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 139
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 98
+
+  108 BuiltInCall: is_literal_token '(' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 140
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 99
+
+  109 BuiltInCall: is_uri_token '(' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 141
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 100
+
+  110 BuiltInCall: bound_token '(' • Var ')'
+
+    var_token  shift, and go to state 54
+
+    Var  go to state 142
+
+
+State 101
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+   36           | '!' Expression •
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+
+    $default  reduce using rule 36 (Expression)
+
+
+State 102
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+   37           | '(' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 143
+
+
+State 103
+
+   22 Projection: '(' Expression as_token • Var ')'
+
+    var_token  shift, and go to state 54
+
+    Var  go to state 144
+
+
+State 104
+
+   34 Expression: Expression and_token • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 145
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 105
+
+   35 Expression: Expression or_token • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 146
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 106
+
+   33 Expression: Expression noteq_token • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 147
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 107
+
+   28 Expression: Expression '<' • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 148
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 108
+
+   29 Expression: Expression '>' • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 149
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 109
+
+   30 Expression: Expression '=' • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 150
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 110
+
+   31 Expression: Expression geq_token • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 151
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 111
+
+   32 Expression: Expression leq_token • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 152
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 112
+
+   24 Expression: Expression '+' • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 153
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 113
+
+   25 Expression: Expression '-' • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 154
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 114
+
+   26 Expression: Expression '*' • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 155
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 115
+
+   27 Expression: Expression '/' • Expression
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 156
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 116
+
+   41 Expression: IRIRef '(' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 157
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 117
+
+   48 GroupGraphPattern: '{' SubSelect • '}'
+
+    '}'  shift, and go to state 158
+
+
+State 118
+
+    8 SubSelect: SelectClause • WhereClause SolutionModifier
+
+    where_token  shift, and go to state 61
+
+    WhereClause  go to state 159
+
+
+State 119
+
+   47 GroupGraphPattern: '{' GroupGraphPatternSub • '}'
+
+    '}'  shift, and go to state 160
+
+
+State 120
+
+   49 GroupGraphPatternSub: TriplesBlock • GroupGraphPatternSubS
+   52 TriplesBlock: TriplesBlock • '.' TriplesSameSubjectPath
+
+    optional_token  shift, and go to state 161
+    minus_token     shift, and go to state 162
+    filter_token    shift, and go to state 163
+    graph_token     shift, and go to state 164
+    bind_token      shift, and go to state 165
+    '{'             shift, and go to state 84
+    '.'             shift, and go to state 29
+
+    $default  reduce using rule 51 (GroupGraphPatternSubS)
+
+    GroupGraphPattern         go to state 166
+    GroupGraphPatternSubS     go to state 167
+    GraphPatternNotTriples    go to state 168
+    GroupOrUnionGraphPattern  go to state 169
+    OptionalGraphPattern      go to state 170
+    MinusGraphPattern         go to state 171
+    Filter                    go to state 172
+    GraphGraphPattern         go to state 173
+    Bind                      go to state 174
+
+
+State 121
+
+   44 DatasetClause: DatasetClause from_token named_token IRIRef •
+
+    $default  reduce using rule 44 (DatasetClause)
+
+
+State 122
+
+   93 OrderElem: asc_token • '(' var_token ')'
+
+    '('  shift, and go to state 175
+
+
+State 123
+
+   92 OrderElem: desc_token • '(' var_token ')'
+
+    '('  shift, and go to state 176
+
+
+State 124
+
+   94 OrderElem: var_token •
+
+    $default  reduce using rule 94 (OrderElem)
+
+
+State 125
+
+   82 SolutionModifier: order_by_token OrderList •
+   90 OrderList: OrderList • OrderElem
+
+    asc_token   shift, and go to state 122
+    desc_token  shift, and go to state 123
+    var_token   shift, and go to state 124
+
+    $default  reduce using rule 82 (SolutionModifier)
+
+    OrderElem  go to state 177
+
+
+State 126
+
+   91 OrderList: OrderElem •
+
+    $default  reduce using rule 91 (OrderList)
+
+
+State 127
+
+   99 GroupCondition: var_token •
+
+    $default  reduce using rule 99 (GroupCondition)
+
+
+State 128
+
+   83 SolutionModifier: group_by_token GroupConditions •
+   97 GroupConditions: GroupConditions • GroupCondition
+
+    var_token  shift, and go to state 127
+
+    $default  reduce using rule 83 (SolutionModifier)
+
+    GroupCondition  go to state 178
+
+
+State 129
+
+   98 GroupConditions: GroupCondition •
+
+    $default  reduce using rule 98 (GroupConditions)
+
+
+State 130
+
+   85 LimitOffset: limit_token • int_token offset_token int_token
+   87            | limit_token • int_token
+
+    int_token  shift, and go to state 179
+
+
+State 131
+
+   86 LimitOffset: offset_token • int_token limit_token int_token
+   88            | offset_token • int_token
+
+    int_token  shift, and go to state 180
+
+
+State 132
+
+    7 Query: Decl SelectClause DatasetClause WhereClause SolutionModifier LimitOffset • ValuesClause
+
+    values_token  shift, and go to state 181
+
+    $default  reduce using rule 114 (ValuesClause)
+
+    ValuesClause  go to state 182
+
+
+State 133
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  100 BuiltInCall: regex_token '(' Expression • ',' Expression ')'
+  101            | regex_token '(' Expression • ',' Expression ',' Expression ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ','          shift, and go to state 183
+
+
+State 134
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  102 BuiltInCall: builtin_str_token '(' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 184
+
+
+State 135
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  103 BuiltInCall: round_token '(' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 185
+
+
+State 136
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  104 BuiltInCall: abs_token '(' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 186
+
+
+State 137
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  105 BuiltInCall: datatype_token '(' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 187
+
+
+State 138
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  106 BuiltInCall: contains_token '(' Expression • ',' Expression ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ','          shift, and go to state 188
+
+
+State 139
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  107 BuiltInCall: lcase_token '(' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 189
+
+
+State 140
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  108 BuiltInCall: is_literal_token '(' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 190
+
+
+State 141
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  109 BuiltInCall: is_uri_token '(' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 191
+
+
+State 142
+
+  110 BuiltInCall: bound_token '(' Var • ')'
+
+    ')'  shift, and go to state 192
+
+
+State 143
+
+   37 Expression: '(' Expression ')' •
+
+    $default  reduce using rule 37 (Expression)
+
+
+State 144
+
+   22 Projection: '(' Expression as_token Var • ')'
+
+    ')'  shift, and go to state 193
+
+
+State 145
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   34           | Expression and_token Expression •
+   35           | Expression • or_token Expression
+
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+
+    $default  reduce using rule 34 (Expression)
+
+
+State 146
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+   35           | Expression or_token Expression •
+
+    and_token    shift, and go to state 104
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+
+    $default  reduce using rule 35 (Expression)
+
+
+State 147
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   33           | Expression noteq_token Expression •
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    '+'  shift, and go to state 112
+    '-'  shift, and go to state 113
+    '*'  shift, and go to state 114
+    '/'  shift, and go to state 115
+
+    $default  reduce using rule 33 (Expression)
+
+
+State 148
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   28           | Expression '<' Expression •
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    '+'  shift, and go to state 112
+    '-'  shift, and go to state 113
+    '*'  shift, and go to state 114
+    '/'  shift, and go to state 115
+
+    $default  reduce using rule 28 (Expression)
+
+
+State 149
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   29           | Expression '>' Expression •
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    '+'  shift, and go to state 112
+    '-'  shift, and go to state 113
+    '*'  shift, and go to state 114
+    '/'  shift, and go to state 115
+
+    $default  reduce using rule 29 (Expression)
+
+
+State 150
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   30           | Expression '=' Expression •
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    '+'  shift, and go to state 112
+    '-'  shift, and go to state 113
+    '*'  shift, and go to state 114
+    '/'  shift, and go to state 115
+
+    $default  reduce using rule 30 (Expression)
+
+
+State 151
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   31           | Expression geq_token Expression •
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    '+'  shift, and go to state 112
+    '-'  shift, and go to state 113
+    '*'  shift, and go to state 114
+    '/'  shift, and go to state 115
+
+    $default  reduce using rule 31 (Expression)
+
+
+State 152
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   32           | Expression leq_token Expression •
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    '+'  shift, and go to state 112
+    '-'  shift, and go to state 113
+    '*'  shift, and go to state 114
+    '/'  shift, and go to state 115
+
+    $default  reduce using rule 32 (Expression)
+
+
+State 153
+
+   24 Expression: Expression • '+' Expression
+   24           | Expression '+' Expression •
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    '*'  shift, and go to state 114
+    '/'  shift, and go to state 115
+
+    $default  reduce using rule 24 (Expression)
+
+
+State 154
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   25           | Expression '-' Expression •
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    '*'  shift, and go to state 114
+    '/'  shift, and go to state 115
+
+    $default  reduce using rule 25 (Expression)
+
+
+State 155
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   26           | Expression '*' Expression •
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    $default  reduce using rule 26 (Expression)
+
+
+State 156
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   27           | Expression '/' Expression •
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+
+    $default  reduce using rule 27 (Expression)
+
+
+State 157
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+   41           | IRIRef '(' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 194
+
+
+State 158
+
+   48 GroupGraphPattern: '{' SubSelect '}' •
+
+    $default  reduce using rule 48 (GroupGraphPattern)
+
+
+State 159
+
+    8 SubSelect: SelectClause WhereClause • SolutionModifier
+
+    order_by_token  shift, and go to state 88
+    group_by_token  shift, and go to state 89
+
+    $default  reduce using rule 84 (SolutionModifier)
+
+    SolutionModifier  go to state 195
+
+
+State 160
+
+   47 GroupGraphPattern: '{' GroupGraphPatternSub '}' •
+
+    $default  reduce using rule 47 (GroupGraphPattern)
+
+
+State 161
+
+   80 OptionalGraphPattern: optional_token • GroupGraphPattern
+
+    '{'  shift, and go to state 84
+
+    GroupGraphPattern  go to state 196
+
+
+State 162
+
+   81 MinusGraphPattern: minus_token • GroupGraphPattern
+
+    '{'  shift, and go to state 84
+
+    GroupGraphPattern  go to state 197
+
+
+State 163
+
+   95 Filter: filter_token • '(' Expression ')'
+   96       | filter_token • BuiltInCall
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    '('                shift, and go to state 198
+
+    BuiltInCall  go to state 199
+
+
+State 164
+
+  111 GraphGraphPattern: graph_token • VarOrIri GroupGraphPattern
+
+    var_token         shift, and go to state 9
+    iri_token         shift, and go to state 10
+    str_token         shift, and go to state 11
+    blank_node_token  shift, and go to state 13
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix    go to state 15
+    VarOrIri  go to state 200
+    IRIRef    go to state 20
+
+
+State 165
+
+  112 Bind: bind_token • '(' Expression as_token Var ')'
+
+    '('  shift, and go to state 201
+
+
+State 166
+
+   79 GroupOrUnionGraphPattern: GroupGraphPattern •
+
+    $default  reduce using rule 79 (GroupOrUnionGraphPattern)
+
+
+State 167
+
+   49 GroupGraphPatternSub: TriplesBlock GroupGraphPatternSubS •
+
+    $default  reduce using rule 49 (GroupGraphPatternSub)
+
+
+State 168
+
+   50 GroupGraphPatternSubS: GraphPatternNotTriples • TriplesBlock GroupGraphPatternSubS
+
+    var_token         shift, and go to state 9
+    iri_token         shift, and go to state 10
+    str_token         shift, and go to state 11
+    string_token      shift, and go to state 12
+    blank_node_token  shift, and go to state 13
+    int_token         shift, and go to state 14
+
+    ':'       reduce using rule 13 (Prefix)
+    $default  reduce using rule 55 (TriplesSameSubjectPath)
+
+    Prefix                  go to state 15
+    TriplesBlock            go to state 202
+    TriplesSameSubjectPath  go to state 17
+    VarOrTerm               go to state 18
+    VarOrIri                go to state 19
+    IRIRef                  go to state 20
+    RDFLiteral              go to state 21
+
+
+State 169
+
+   72 GraphPatternNotTriples: GroupOrUnionGraphPattern •
+   78 GroupOrUnionGraphPattern: GroupOrUnionGraphPattern • union_token GroupGraphPattern
+
+    union_token  shift, and go to state 203
+
+    $default  reduce using rule 72 (GraphPatternNotTriples)
+
+
+State 170
+
+   73 GraphPatternNotTriples: OptionalGraphPattern •
+
+    $default  reduce using rule 73 (GraphPatternNotTriples)
+
+
+State 171
+
+   74 GraphPatternNotTriples: MinusGraphPattern •
+
+    $default  reduce using rule 74 (GraphPatternNotTriples)
+
+
+State 172
+
+   75 GraphPatternNotTriples: Filter •
+
+    $default  reduce using rule 75 (GraphPatternNotTriples)
+
+
+State 173
+
+   76 GraphPatternNotTriples: GraphGraphPattern •
+
+    $default  reduce using rule 76 (GraphPatternNotTriples)
+
+
+State 174
+
+   77 GraphPatternNotTriples: Bind •
+
+    $default  reduce using rule 77 (GraphPatternNotTriples)
+
+
+State 175
+
+   93 OrderElem: asc_token '(' • var_token ')'
+
+    var_token  shift, and go to state 204
+
+
+State 176
+
+   92 OrderElem: desc_token '(' • var_token ')'
+
+    var_token  shift, and go to state 205
+
+
+State 177
+
+   90 OrderList: OrderList OrderElem •
+
+    $default  reduce using rule 90 (OrderList)
+
+
+State 178
+
+   97 GroupConditions: GroupConditions GroupCondition •
+
+    $default  reduce using rule 97 (GroupConditions)
+
+
+State 179
+
+   85 LimitOffset: limit_token int_token • offset_token int_token
+   87            | limit_token int_token •
+
+    offset_token  shift, and go to state 206
+
+    $default  reduce using rule 87 (LimitOffset)
+
+
+State 180
+
+   86 LimitOffset: offset_token int_token • limit_token int_token
+   88            | offset_token int_token •
+
+    limit_token  shift, and go to state 207
+
+    $default  reduce using rule 88 (LimitOffset)
+
+
+State 181
+
+  113 ValuesClause: values_token • Var '{' DataBlockValue '}'
+
+    var_token  shift, and go to state 54
+
+    Var  go to state 208
+
+
+State 182
+
+    7 Query: Decl SelectClause DatasetClause WhereClause SolutionModifier LimitOffset ValuesClause •
+
+    $default  reduce using rule 7 (Query)
+
+
+State 183
+
+  100 BuiltInCall: regex_token '(' Expression ',' • Expression ')'
+  101            | regex_token '(' Expression ',' • Expression ',' Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 209
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 184
+
+  102 BuiltInCall: builtin_str_token '(' Expression ')' •
+
+    $default  reduce using rule 102 (BuiltInCall)
+
+
+State 185
+
+  103 BuiltInCall: round_token '(' Expression ')' •
+
+    $default  reduce using rule 103 (BuiltInCall)
+
+
+State 186
+
+  104 BuiltInCall: abs_token '(' Expression ')' •
+
+    $default  reduce using rule 104 (BuiltInCall)
+
+
+State 187
+
+  105 BuiltInCall: datatype_token '(' Expression ')' •
+
+    $default  reduce using rule 105 (BuiltInCall)
+
+
+State 188
+
+  106 BuiltInCall: contains_token '(' Expression ',' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 210
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 189
+
+  107 BuiltInCall: lcase_token '(' Expression ')' •
+
+    $default  reduce using rule 107 (BuiltInCall)
+
+
+State 190
+
+  108 BuiltInCall: is_literal_token '(' Expression ')' •
+
+    $default  reduce using rule 108 (BuiltInCall)
+
+
+State 191
+
+  109 BuiltInCall: is_uri_token '(' Expression ')' •
+
+    $default  reduce using rule 109 (BuiltInCall)
+
+
+State 192
+
+  110 BuiltInCall: bound_token '(' Var ')' •
+
+    $default  reduce using rule 110 (BuiltInCall)
+
+
+State 193
+
+   22 Projection: '(' Expression as_token Var ')' •
+
+    $default  reduce using rule 22 (Projection)
+
+
+State 194
+
+   41 Expression: IRIRef '(' Expression ')' •
+
+    $default  reduce using rule 41 (Expression)
+
+
+State 195
+
+    8 SubSelect: SelectClause WhereClause SolutionModifier •
+
+    $default  reduce using rule 8 (SubSelect)
+
+
+State 196
+
+   80 OptionalGraphPattern: optional_token GroupGraphPattern •
+
+    $default  reduce using rule 80 (OptionalGraphPattern)
+
+
+State 197
+
+   81 MinusGraphPattern: minus_token GroupGraphPattern •
+
+    $default  reduce using rule 81 (MinusGraphPattern)
+
+
+State 198
+
+   95 Filter: filter_token '(' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 211
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 199
+
+   96 Filter: filter_token BuiltInCall •
+
+    $default  reduce using rule 96 (Filter)
+
+
+State 200
+
+  111 GraphGraphPattern: graph_token VarOrIri • GroupGraphPattern
+
+    '{'  shift, and go to state 84
+
+    GroupGraphPattern  go to state 212
+
+
+State 201
+
+  112 Bind: bind_token '(' • Expression as_token Var ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 213
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 202
+
+   50 GroupGraphPatternSubS: GraphPatternNotTriples TriplesBlock • GroupGraphPatternSubS
+   52 TriplesBlock: TriplesBlock • '.' TriplesSameSubjectPath
+
+    optional_token  shift, and go to state 161
+    minus_token     shift, and go to state 162
+    filter_token    shift, and go to state 163
+    graph_token     shift, and go to state 164
+    bind_token      shift, and go to state 165
+    '{'             shift, and go to state 84
+    '.'             shift, and go to state 29
+
+    $default  reduce using rule 51 (GroupGraphPatternSubS)
+
+    GroupGraphPattern         go to state 166
+    GroupGraphPatternSubS     go to state 214
+    GraphPatternNotTriples    go to state 168
+    GroupOrUnionGraphPattern  go to state 169
+    OptionalGraphPattern      go to state 170
+    MinusGraphPattern         go to state 171
+    Filter                    go to state 172
+    GraphGraphPattern         go to state 173
+    Bind                      go to state 174
+
+
+State 203
+
+   78 GroupOrUnionGraphPattern: GroupOrUnionGraphPattern union_token • GroupGraphPattern
+
+    '{'  shift, and go to state 84
+
+    GroupGraphPattern  go to state 215
+
+
+State 204
+
+   93 OrderElem: asc_token '(' var_token • ')'
+
+    ')'  shift, and go to state 216
+
+
+State 205
+
+   92 OrderElem: desc_token '(' var_token • ')'
+
+    ')'  shift, and go to state 217
+
+
+State 206
+
+   85 LimitOffset: limit_token int_token offset_token • int_token
+
+    int_token  shift, and go to state 218
+
+
+State 207
+
+   86 LimitOffset: offset_token int_token limit_token • int_token
+
+    int_token  shift, and go to state 219
+
+
+State 208
+
+  113 ValuesClause: values_token Var • '{' DataBlockValue '}'
+
+    '{'  shift, and go to state 220
+
+
+State 209
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  100 BuiltInCall: regex_token '(' Expression ',' Expression • ')'
+  101            | regex_token '(' Expression ',' Expression • ',' Expression ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 221
+    ','          shift, and go to state 222
+
+
+State 210
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  106 BuiltInCall: contains_token '(' Expression ',' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 223
+
+
+State 211
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+   95 Filter: filter_token '(' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 224
+
+
+State 212
+
+  111 GraphGraphPattern: graph_token VarOrIri GroupGraphPattern •
+
+    $default  reduce using rule 111 (GraphGraphPattern)
+
+
+State 213
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  112 Bind: bind_token '(' Expression • as_token Var ')'
+
+    as_token     shift, and go to state 225
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+
+
+State 214
+
+   50 GroupGraphPatternSubS: GraphPatternNotTriples TriplesBlock GroupGraphPatternSubS •
+
+    $default  reduce using rule 50 (GroupGraphPatternSubS)
+
+
+State 215
+
+   78 GroupOrUnionGraphPattern: GroupOrUnionGraphPattern union_token GroupGraphPattern •
+
+    $default  reduce using rule 78 (GroupOrUnionGraphPattern)
+
+
+State 216
+
+   93 OrderElem: asc_token '(' var_token ')' •
+
+    $default  reduce using rule 93 (OrderElem)
+
+
+State 217
+
+   92 OrderElem: desc_token '(' var_token ')' •
+
+    $default  reduce using rule 92 (OrderElem)
+
+
+State 218
+
+   85 LimitOffset: limit_token int_token offset_token int_token •
+
+    $default  reduce using rule 85 (LimitOffset)
+
+
+State 219
+
+   86 LimitOffset: offset_token int_token limit_token int_token •
+
+    $default  reduce using rule 86 (LimitOffset)
+
+
+State 220
+
+  113 ValuesClause: values_token Var '{' • DataBlockValue '}'
+
+    iri_token  shift, and go to state 10
+    str_token  shift, and go to state 11
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix          go to state 15
+    IRIRef          go to state 226
+    DataBlockValue  go to state 227
+
+
+State 221
+
+  100 BuiltInCall: regex_token '(' Expression ',' Expression ')' •
+
+    $default  reduce using rule 100 (BuiltInCall)
+
+
+State 222
+
+  101 BuiltInCall: regex_token '(' Expression ',' Expression ',' • Expression ')'
+
+    regex_token        shift, and go to state 66
+    builtin_str_token  shift, and go to state 67
+    round_token        shift, and go to state 68
+    abs_token          shift, and go to state 69
+    datatype_token     shift, and go to state 70
+    contains_token     shift, and go to state 71
+    lcase_token        shift, and go to state 72
+    is_literal_token   shift, and go to state 73
+    is_uri_token       shift, and go to state 74
+    bound_token        shift, and go to state 75
+    var_token          shift, and go to state 54
+    iri_token          shift, and go to state 10
+    str_token          shift, and go to state 11
+    string_token       shift, and go to state 12
+    int_token          shift, and go to state 14
+    '!'                shift, and go to state 76
+    '('                shift, and go to state 77
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix       go to state 15
+    Var          go to state 78
+    Expression   go to state 228
+    IRIRef       go to state 80
+    RDFLiteral   go to state 81
+    BuiltInCall  go to state 82
+
+
+State 223
+
+  106 BuiltInCall: contains_token '(' Expression ',' Expression ')' •
+
+    $default  reduce using rule 106 (BuiltInCall)
+
+
+State 224
+
+   95 Filter: filter_token '(' Expression ')' •
+
+    $default  reduce using rule 95 (Filter)
+
+
+State 225
+
+  112 Bind: bind_token '(' Expression as_token • Var ')'
+
+    var_token  shift, and go to state 54
+
+    Var  go to state 229
+
+
+State 226
+
+  116 DataBlockValue: IRIRef •
+
+    $default  reduce using rule 116 (DataBlockValue)
+
+
+State 227
+
+  113 ValuesClause: values_token Var '{' DataBlockValue • '}'
+  115 DataBlockValue: DataBlockValue • IRIRef
+
+    iri_token  shift, and go to state 10
+    str_token  shift, and go to state 11
+    '}'        shift, and go to state 230
+
+    $default  reduce using rule 13 (Prefix)
+
+    Prefix  go to state 15
+    IRIRef  go to state 231
+
+
+State 228
+
+   24 Expression: Expression • '+' Expression
+   25           | Expression • '-' Expression
+   26           | Expression • '*' Expression
+   27           | Expression • '/' Expression
+   28           | Expression • '<' Expression
+   29           | Expression • '>' Expression
+   30           | Expression • '=' Expression
+   31           | Expression • geq_token Expression
+   32           | Expression • leq_token Expression
+   33           | Expression • noteq_token Expression
+   34           | Expression • and_token Expression
+   35           | Expression • or_token Expression
+  101 BuiltInCall: regex_token '(' Expression ',' Expression ',' Expression • ')'
+
+    and_token    shift, and go to state 104
+    or_token     shift, and go to state 105
+    noteq_token  shift, and go to state 106
+    '<'          shift, and go to state 107
+    '>'          shift, and go to state 108
+    '='          shift, and go to state 109
+    geq_token    shift, and go to state 110
+    leq_token    shift, and go to state 111
+    '+'          shift, and go to state 112
+    '-'          shift, and go to state 113
+    '*'          shift, and go to state 114
+    '/'          shift, and go to state 115
+    ')'          shift, and go to state 232
+
+
+State 229
+
+  112 Bind: bind_token '(' Expression as_token Var • ')'
+
+    ')'  shift, and go to state 233
+
+
+State 230
+
+  113 ValuesClause: values_token Var '{' DataBlockValue '}' •
+
+    $default  reduce using rule 113 (ValuesClause)
+
+
+State 231
+
+  115 DataBlockValue: DataBlockValue IRIRef •
+
+    $default  reduce using rule 115 (DataBlockValue)
+
+
+State 232
+
+  101 BuiltInCall: regex_token '(' Expression ',' Expression ',' Expression ')' •
+
+    $default  reduce using rule 101 (BuiltInCall)
+
+
+State 233
+
+  112 Bind: bind_token '(' Expression as_token Var ')' •
+
+    $default  reduce using rule 112 (Bind)
