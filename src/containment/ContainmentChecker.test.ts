@@ -63,5 +63,103 @@ WHERE {
     const containmentChecker = new ContainmentChecker();
     const result = await containmentChecker.checkContainment(rspqlSubQuery, rspqlSuperQuery);
     expect(result).toBe(true);
-  })
+  });
+
+  it("check containment for queries with different aggregation functions", async () => {
+    const rspqlSubQuery = `PREFIX ex: <http://example.org/>
+    REGISTER RStream <output> AS
+    SELECT (COUNT(?x) AS ?count)
+    FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
+    WHERE {
+    WINDOW ex:w1 { ?x a ex:Person. }
+    }`;
+
+    const rspqlSuperQuery = `PREFIX ex: <http://example.org/>
+    REGISTER RStream <output> AS
+    SELECT (MIN(?x) AS ?count)
+    FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
+    WHERE {
+      WINDOW ex:w1 { 
+        ?x a ex:Person.
+        ?x ex:hasAge ex:One.
+      }
+    }
+    `;
+
+    const containmentChecker = new ContainmentChecker();
+    const result = await containmentChecker.checkContainment(rspqlSubQuery, rspqlSuperQuery);
+    expect(result).toBe(false);
+  });
+
+
+  it("check containment with different window semantics", async () => {
+    const rspqlSubQuery = `PREFIX ex: <http://example.org/>
+    REGISTER RStream <output> AS
+    SELECT (COUNT(?x) AS ?count)
+    FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 100 STEP 50]
+    WHERE {
+    WINDOW ex:w1 { ?x a ex:Person. }
+    }`;
+    const rspqlSuperQuery = `PREFIX ex: <http://example.org/>
+REGISTER RStream <output> AS
+SELECT (COUNT(?x) AS ?count)
+FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
+WHERE {
+  WINDOW ex:w1 { 
+    ?x a ex:Person.
+    ?x ex:hasAge ex:One.
+  }
+}
+`;
+    const containmentChecker = new ContainmentChecker();
+    const result = await containmentChecker.checkContainment(rspqlSubQuery, rspqlSuperQuery);
+    expect(result).toBe(true);
+  });
+
+  it("check containment for queries wqith different streams", async () => {
+    const rspqlSubQuery = `PREFIX ex: <http://example.org/>
+    REGISTER RStream <output> AS
+    SELECT (COUNT(?x) AS ?count)
+    FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
+    WHERE {
+    WINDOW ex:w1 { ?x a ex:Person. }
+    }`;
+    const rspqlSuperQuery = `PREFIX ex: <http://example.org/>
+    REGISTER RStream <output> AS
+    SELECT (COUNT(?x) AS ?count)
+    FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
+    FROM NAMED WINDOW ex:w2 ON STREAM ex:stream2 [RANGE 10 STEP 5]
+    WHERE {
+    WINDOW ex:w1 { ?x a ex:Person. }
+    WINDOW ex:w2 { ?x ex:hasAge ex:One. }
+    }`;
+
+    const containmentChecker = new ContainmentChecker();
+    const result = await containmentChecker.checkContainment(rspqlSubQuery, rspqlSuperQuery);
+    expect(result).toBe(true);
+  });
+
+  it("should fail containment with different streams", async () => {
+    const rspqlSubQuery = `PREFIX ex: <http://example.org/>
+      REGISTER RStream <output> AS
+      SELECT ?x
+      FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
+      WHERE {
+        WINDOW ex:w1 { ?x a ex:Person. }
+      }`;
+    const rspqlSuperQuery = `PREFIX ex: <http://example.org/>
+      REGISTER RStream <output> AS
+      SELECT ?x
+      FROM NAMED WINDOW ex:w1 ON STREAM ex:stream2 [RANGE 10 STEP 5]
+      WHERE {
+        WINDOW ex:w1 { 
+          ?x a ex:Person.
+          ?x ex:hasAge ex:One.
+        }
+      }`;
+    const containmentChecker = new ContainmentChecker();
+    const result = await containmentChecker.checkContainment(rspqlSubQuery, rspqlSuperQuery);
+    expect(result).toBe(false);
+  });
+
 });

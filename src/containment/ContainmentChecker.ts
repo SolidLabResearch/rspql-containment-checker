@@ -28,7 +28,7 @@ export class ContainmentChecker {
     public async checkContainment(query1: string, query2: string): Promise<boolean> {
         const parsedQuery1 = this.parser.parse(query1);
         const parsedQuery2 = this.parser.parse(query2);
-        if (parsedQuery1.aggregation_function === parsedQuery2.aggregation_function) {
+        if (parsedQuery1.aggregation_function === parsedQuery2.aggregation_function && parsedQuery1.s2r[0].stream_name === parsedQuery2.s2r[0].stream_name) {
 
             if (!parsedQuery1 || !parsedQuery2) {
                 throw new Error("Failed to parse queries");
@@ -58,7 +58,7 @@ export class ContainmentChecker {
             return specsResult.containment;
         }
         else {
-            throw new Error("The aggregation functions in the queries do not match. Containment check cannot be performed.");
+            return false;
         }
     }
 }
