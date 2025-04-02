@@ -91,6 +91,26 @@ The server will respond with the containment result:
 ```
 This indicates that the first query is contained in the second query.
 
+# Isomorphism Check
+
+The RSPQL Containment Checker also provides an isomorphism check for the two queries. The isomorphism check can also be performed using the  `POST /containment` endpoint. The request body should contain the following JSON object:
+```json
+{
+  "query1": "<RSP-QL query 1>",
+  "query2": "<RSP-QL query 2>"
+}
+```
+
+The response will contain the isomorphism result in the following format:
+```json
+{
+  "isomorphism": "<boolean value of true | false>",
+}
+```
+
+We utilize the [RSPQL Query Isomorphism](https://github.com/SolidLabResearch/rspql-query-isomorphism) tool to check the isomorphism.
+Since the isomorphism relation is cheaper to compute than the containment relation, we first check for isomorphism before checking for containment. In case the two queries are isomorphic, we return the result as `true` without checking for containment.
+If the two queries are not isomorphic, we check for containment and return the result as `false` if the containment check fails and `true` if the containment check passes.
 
 # License
 The code is licensed under the GPL-3.0 License. See the [LICENSE](LICENSE) file for details.
