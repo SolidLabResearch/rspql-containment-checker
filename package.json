@@ -23,6 +23,7 @@
         "@types/bunyan": "^1.8.11",
         "bunyan": "^1.8.15",
         "commander": "^13.1.0",
+        "rspql-query-isomorphism": "^2.0.0",
         "sparqljs": "^3.7.3"
     }
 }

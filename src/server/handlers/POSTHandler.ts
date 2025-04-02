@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { is_isomorphic } from "rspql-query-isomorphism";
 import { IncomingMessage, ServerResponse } from "http";
 import { ContainmentChecker } from "../../containment/ContainmentChecker";
 
@@ -36,7 +37,7 @@ export class POSTHandler {
         try {
             switch (request.url) {
                 case "/containment":
-                    await this.handleContainment(parsedBody, response);
+                    await this.handleQueryRelationships(parsedBody, response);
                     break;
                 default:
                     response.statusCode = 404;
@@ -62,7 +63,7 @@ export class POSTHandler {
         }
     }
 
-    private static async handleContainment(parsedBody: any, response: ServerResponse) {
+    private static async handleQueryRelationships(parsedBody: any, response: ServerResponse) {
         const subquery = parsedBody.subquery;
         const superquery = parsedBody.superquery;
 
@@ -70,32 +71,45 @@ export class POSTHandler {
         // Log headers state for debugging, but avoid console.log in production
         const headersBefore = response.headersSent;
 
-        let containment_result;
-        try {
-            containment_result = await containmentChecker.checkContainment(subquery, superquery);
-        } catch (error) {
-            if (!response.headersSent) {
-                response.statusCode = 500;
-                const errorResponse = JSON.stringify({ error: error });
-                response.setHeader("Content-Length", Buffer.byteLength(errorResponse));
-                response.write(errorResponse);
-                response.end();
-            }
-            return;
-        }
+        // Check if the queries are isomorphic for a quick exit from the containment check
+        const if_isomorphic: boolean = is_isomorphic(subquery, superquery);
 
-        const headersAfter = response.headersSent;
-        if (headersBefore !== headersAfter) {
-            // Temporary log to confirm headers change; remove after debugging
-            console.log(`Headers changed during checkContainment: ${headersBefore} -> ${headersAfter}`);
-        }
-
-        if (!response.headersSent) {
+        if (if_isomorphic) {
             response.statusCode = 200;
-            const jsonResponse = JSON.stringify({ containment: containment_result });
+            const jsonResponse = JSON.stringify({ isomorphism: true });
             response.setHeader("Content-Length", Buffer.byteLength(jsonResponse));
             response.write(jsonResponse);
             response.end();
         }
+        else {
+            let containment_result;
+            try {
+                containment_result = await containmentChecker.checkContainment(subquery, superquery);
+            } catch (error) {
+                if (!response.headersSent) {
+                    response.statusCode = 500;
+                    const errorResponse = JSON.stringify({ error: error });
+                    response.setHeader("Content-Length", Buffer.byteLength(errorResponse));
+                    response.write(errorResponse);
+                    response.end();
+                }
+                return;
+            }
+            const headersAfter = response.headersSent;
+            if (headersBefore !== headersAfter) {
+                // Temporary log to confirm headers change; remove after debugging
+                console.log(`Headers changed during checkContainment: ${headersBefore} -> ${headersAfter}`);
+            }
+
+            if (!response.headersSent) {
+                response.statusCode = 200;
+                const jsonResponse = JSON.stringify({ containment: containment_result });
+                response.setHeader("Content-Length", Buffer.byteLength(jsonResponse));
+                response.write(jsonResponse);
+                response.end();
+            }
+        }
+
+
     }
 }
