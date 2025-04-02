@@ -44,10 +44,7 @@ export class ContainmentChecker {
             const specsOptions = {
                 superquery: sparqlQuery1,
                 subquery: sparqlQuery2,
-            };
-
-            console.log(`SPeCS options: ${JSON.stringify(specsOptions)}`);
-            
+            };            
 
             const specsResult = await this.specsWrapper.runSPeCS(specsOptions);
 

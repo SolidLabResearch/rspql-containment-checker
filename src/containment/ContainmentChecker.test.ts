@@ -44,14 +44,14 @@ WHERE {
   it("check containment for queries with aggregation functions", async () => {
     const rspqlSubQuery = `PREFIX ex: <http://example.org/>
     REGISTER RStream <output> AS
-    SELECT (AVG(?x) AS ?avg)
+    SELECT (COUNT(?x) AS ?count)
     FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
     WHERE {
     WINDOW ex:w1 { ?x a ex:Person. }
     }`;
     const rspqlSuperQuery = `PREFIX ex: <http://example.org/>
 REGISTER RStream <output> AS
-SELECT (AVG(?x) AS ?avg)
+SELECT (COUNT(?x) AS ?count)
 FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
 WHERE {
   WINDOW ex:w1 { 

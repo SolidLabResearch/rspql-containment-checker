@@ -55,7 +55,7 @@ For the two RSP-QL queries:
 ```sparql
 PREFIX ex: <http://example.org/>
 REGISTER RStream <output> AS
-SELECT (AVG(?x) AS ?avg)
+SELECT (COUNT(?x) AS ?count)
 FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
 WHERE {
     WINDOW ex:w1 { ?x a ex:Person. }
@@ -66,7 +66,7 @@ and
 ```sparql
 PREFIX ex: <http://example.org/>
 REGISTER RStream <output> AS
-SELECT (AVG(?x) AS ?avg)
+SELECT (COUNT(?x) AS ?count)
 FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
 WHERE {
   WINDOW ex:w1 { 
@@ -78,8 +78,8 @@ WHERE {
 You can check the containment between the queries by doing a POST request to the `/containment` endpoint with the following example of JSON:
 ```json
 {
-  "subquery": "PREFIX ex: <http://example.org/>\nREGISTER RStream <output> AS\nSELECT (AVG(?x) AS ?avg)\nFROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]\nWHERE {\n    WINDOW ex:w1 { ?x a ex:Person. }\n}",
-  "superquery": "PREFIX ex: <http://example.org/>\nREGISTER RStream <output> AS\nSELECT (AVG(?x) AS ?avg)\nFROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]\nWHERE {\n  WINDOW ex:w1 { \n    ?x a ex:Person.\n    ?x ex:hasAge ex:One.\n  }\n}"
+  "subquery": "PREFIX ex: <http://example.org/>\nREGISTER RStream <output> AS\nSELECT (COUNT(?x) AS ?count)\nFROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]\nWHERE {\n    WINDOW ex:w1 { ?x a ex:Person. }\n}",
+  "superquery": "PREFIX ex: <http://example.org/>\nREGISTER RStream <output> AS\nSELECT (COUNT(?x) AS ?count)\nFROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]\nWHERE {\n  WINDOW ex:w1 { \n    ?x a ex:Person.\n    ?x ex:hasAge ex:One.\n  }\n}"
 }
 ```
 
