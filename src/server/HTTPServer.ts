@@ -18,15 +18,34 @@ import { createServer, ServerResponse, IncomingMessage, Server } from "http";
 import { GETHandler } from "./handlers/GETHandler";
 import { POSTHandler } from "./handlers/POSTHandler";
 
+/**
+ * HTTPServer is a class that creates an HTTP server to handle incoming requests.
+ * It listens on a specified port and routes requests to appropriate handlers based on the HTTP method (GET or POST).
+ * The class also sets CORS headers to allow cross-origin requests.
+ * @class HTTPServer
+ */
 export class HTTPServer {
     private readonly http_server: Server;
     public logger: any;
+    /**
+     * Creates an instance of HTTPServer.
+     * @param {number} http_port - The port number on which the server will listen for incoming requests.
+     * @param {any} logger - A logger instance for logging messages.
+     * @memberof HTTPServer
+     */
     constructor(http_port: number, logger: any) {
         this.http_server = createServer(this.request_handler.bind(this)).listen(http_port);
         this.logger = logger;
         this.logger.info(`HTTP server started on port ${http_port}`);
     }
 
+    /**
+     * Handles incoming HTTP requests.
+     * It sets CORS headers and routes the request to the appropriate handler based on the HTTP method (GET or POST).
+     * @param {IncomingMessage} request - The incoming HTTP request.
+     * @param {ServerResponse} response - The HTTP response to be sent back.
+     * @memberof HTTPServer
+     */
     private async request_handler(request: IncomingMessage, response: ServerResponse) {
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Headers", "*");
@@ -35,12 +54,13 @@ export class HTTPServer {
         let body: string = "";
 
         switch (request.method) {
-            case "GET":
+            case "GET": {
                 this.logger.info(`GET request received: ${request.url}`);
                 GETHandler.handle(request, response);
                 // No response.end() here; GETHandler should handle it
                 break;
-            case "POST":
+            }
+            case "POST": {
                 body = await new Promise<string>((resolve) => {
                     let data = "";
                     request.on("data", (chunk: Buffer) => {
@@ -52,13 +72,15 @@ export class HTTPServer {
                 await POSTHandler.handle(request, response, body);
                 // No response.end() here; POSTHandler handles it
                 break;
-            default:
+            }
+            default: {
                 response.statusCode = 405;
                 response.setHeader("Content-Type", "application/json");
                 const errorResponse = JSON.stringify({ error: "Method Not Allowed" });
                 response.setHeader("Content-Length", Buffer.byteLength(errorResponse));
                 response.write(errorResponse);
                 response.end();
+            }
         }
     }
 }

@@ -23,15 +23,20 @@ const { Parser: SparqlParser } = require('sparqljs');
 export class RSPQLParser {
     private sparqlParser = new SparqlParser();
 
+    /**
+     * Parses an RSPQL query and extracts relevant informati;on.
+     * @param {string} query - The RSPQL query to parse.
+     * @returns {ParsedQuery} - The parsed query object containing extracted information.
+     */
     parse(query: string): ParsedQuery {
-        let parsed = new ParsedQuery();
-        let split = query.split(/\r?\n/);
-        let sparqlLines = new Array<string>();
-        let originalSparqlLines = new Array<string>(); // For sparqljs parsing with aggregations
-        let prefixMapper = new Map<string, string>();
+        const parsed = new ParsedQuery();
+        const split = query.split(/\r?\n/);
+        const sparqlLines = new Array<string>();
+        const originalSparqlLines = new Array<string>(); // For sparqljs parsing with aggregations
+        const prefixMapper = new Map<string, string>();
 
         split.forEach((line) => {
-            let trimmed_line = line.trim();
+            const trimmed_line = line.trim();
 
             if (trimmed_line.startsWith("REGISTER")) {
                 const regexp = /REGISTER +([^ ]+) +<([^>]+)> AS/g;
@@ -101,10 +106,15 @@ export class RSPQLParser {
         } catch (error) {
             console.warn("Failed to parse SPARQL portion:", error);
         }
-        
+
         return parsed;
     }
 
+    /**
+     * Extracts aggregation functions and variables from the parsed SPARQL query.
+     * @param {any} parsedSparql - The parsed SPARQL query object.
+     * @param {ParsedQuery} parsed - The ParsedQuery object to populate with extracted information.
+     */
     private extractAggregations(parsedSparql: any, parsed: ParsedQuery) {
         if (parsedSparql.queryType === 'SELECT' && parsedSparql.variables) {
             parsedSparql.variables.forEach((variable: any) => {
@@ -119,12 +129,18 @@ export class RSPQLParser {
         }
     }
 
+    /**
+     * Unwraps a prefixed IRI using the provided mapper.
+     * @param {string} prefixedIri - The prefixed IRI to unwrap.
+     * @param {Map<string, string>} mapper - The prefix mapper.
+     * @returns {string} - The unwrapped IRI or an empty string if the prefix is not found.
+     */
     unwrap(prefixedIri: string, mapper: Map<string, string>): string {
         if (prefixedIri.trim().startsWith("<")) {
             return prefixedIri.trim().slice(1, -1);
         }
-        let split = prefixedIri.trim().split(":");
-        let iri = split[0];
+        const split = prefixedIri.trim().split(":");
+        const iri = split[0];
         if (mapper.has(iri)) {
             return mapper.get(iri) + split[1];
         } else {
@@ -146,6 +162,11 @@ export class ParsedQuery {
     public r2s: R2S;
     public s2r: Array<WindowDefinition>;
 
+
+    /**
+     * Creates an instance of ParsedQuery.
+     * @memberof ParsedQuery
+     */
     constructor() {
         this.sparql = "SELECT * WHERE{?s ?p ?o}";
         this.r2s = { operator: "RStream", name: "undefined" };
@@ -156,19 +177,39 @@ export class ParsedQuery {
         this.aggregation_function = "";
     }
 
+    /**
+     * Sets the SPARQL query string.
+     * @param {string} sparql - The SPARQL query string to set.
+     * @returns {void}
+     * @memberof ParsedQuery
+     */
     set_sparql(sparql: string) {
         this.sparql = sparql;
     }
-
+    /**
+     * Sets the R2S object.
+     * @param {R2S} r2s - The R2S object to set.
+     * @returns {void}
+     * @memberof ParsedQuery
+     */
     set_r2s(r2s: R2S) {
         this.r2s = r2s;
     }
 
+    /**
+     * Adds a prefix to the prefixes map.
+     * @param {WindowDefinition} s2r - The S2R object to add.
+     * @memberof ParsedQuery
+     */
     add_s2r(s2r: WindowDefinition) {
         this.s2r.push(s2r);
     }
 }
 
+/**
+ * Represents a window definition in the RSPQL query.
+ * @class WindowDefinition
+ */
 export type WindowDefinition = {
     window_name: string;
     stream_name: string;
@@ -176,6 +217,10 @@ export type WindowDefinition = {
     slide: number;
 };
 
+/**
+ * Represents the R2S object in the RSPQL query.
+ * @class R2S
+ */
 export type R2S = {
     operator: "RStream" | "IStream" | "DStream";
     name: string;

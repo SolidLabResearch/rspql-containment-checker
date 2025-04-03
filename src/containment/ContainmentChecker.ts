@@ -17,14 +17,39 @@
 import { RSPQLParser } from "../parser/RSPQLParser";
 import { SPeCSWrapper } from "./SPeCSWrapper";
 
+/**
+ * The ContainmentChecker class is responsible for checking the containment of two RSPQL queries.
+ * It uses the RSPQLParser to parse the queries and the SPeCSWrapper to run the SPeCS tool for containment checking.
+ * The class provides a method checkContainment that takes two RSPQL queries as input and returns a boolean indicating whether the first query is contained in the second.
+ * @class ContainmentChecker
+ */
 export class ContainmentChecker {
     public parser: RSPQLParser;
     private specsWrapper: SPeCSWrapper;
+    /**
+     * Creates an instance of ContainmentChecker.
+     * @memberof ContainmentChecker
+     */
     constructor() {
         this.parser = new RSPQLParser();
         this.specsWrapper = new SPeCSWrapper();
     }
 
+    /**
+     * Checks the containment of two RSPQL queries.
+     * It parses the queries using the RSPQLParser and then runs the SPeCS tool to check for containment.
+     * If the queries are not valid or if the SPeCS tool fails, an error is thrown.
+     * @param {string} query1 - The first RSPQL query to check.
+     * @param {string} query2 - The second RSPQL query to check.
+     * @throws {Error} - Throws an error if the queries are not valid or if the SPeCS tool fails.
+     * @throws {Error} - Throws an error if the containment result is null.
+     * @throws {Error} - Throws an error if the queries do not have the same stream name or aggregation function.
+     * @throws {Error} - Throws an error if the queries cannot be parsed.
+     * @throws {Error} - Throws an error if the SPeCS tool execution fails.
+     * @throws {Error} - Throws an error if the parsed queries do not contain valid SPARQL.
+     * @returns {Promise<boolean>} - Returns a promise that resolves to true if the first query is contained in the second, false otherwise.
+     * @memberof ContainmentChecker
+     */
     public async checkContainment(query1: string, query2: string): Promise<boolean> {
         const parsedQuery1 = this.parser.parse(query1);
         const parsedQuery2 = this.parser.parse(query2);
@@ -42,11 +67,16 @@ export class ContainmentChecker {
             const sparqlQuery2 = parsedQuery2.sparql;
 
             const specsOptions = {
-                superquery: sparqlQuery1,
-                subquery: sparqlQuery2,
+                subquery: sparqlQuery1,
+                superquery: sparqlQuery2,
             };            
 
+            console.log(specsOptions);
+            
+
             const specsResult = await this.specsWrapper.runSPeCS(specsOptions);
+            console.log(specsResult);
+            
 
             if (specsResult.exitCode !== 0) {
                 throw new Error(`SPeCS execution failed with exit code ${specsResult.exitCode}: ${specsResult.stderr}`);

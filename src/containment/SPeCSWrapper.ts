@@ -18,7 +18,23 @@ import { SpecsOptions, SpecsResult } from "../types/Types";
 import path from 'path';
 import { spawn, SpawnOptions } from 'child_process';
 
+
+/**
+ * SPeCSWrapper is a class that provides a method to run the SPeCS tool for checking query containment.
+ * It uses the child_process module to spawn a new process and execute the SPeCS tool with the provided options.
+ * The class handles the process output and error streams, and returns the result of the containment check.
+ * @class SPeCSWrapper
+ */
 export class SPeCSWrapper {
+    /**
+     * Creates an instance of SPeCSWrapper.
+     * @memberof SPeCSWrapper
+     * @param {SpecsOptions} options - The options for the SPeCS tool.
+     * @param {string} [executablePath=path.resolve(__dirname, '../../specs/src/specs')] - The path to the SPeCS C++ executable.
+     * @returns {Promise<SpecsResult>} - The result of the containment check.
+     * @throws {Error} - Throws an error if the SPeCS tool fails to execute or if the containment result is null.
+     * @memberof SPeCSWrapper
+     */
     public async runSPeCS(options: SpecsOptions, executablePath: string = path.resolve(__dirname, '../../specs/src/specs')): Promise<SpecsResult> {
         if (!options.superquery || !options.subquery) {
             throw new Error("Both superquery and subquery are required.");
@@ -38,6 +54,8 @@ export class SPeCSWrapper {
         };
 
         const process = spawn(executablePath, args, spawnOptions);
+        console.log(executablePath, args, spawnOptions);
+        
 
         let stdout = '';
         let stderr = '';

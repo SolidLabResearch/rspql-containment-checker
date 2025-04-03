@@ -16,11 +16,25 @@
 
 import { IncomingMessage, ServerResponse } from "http";
 
+
+/**
+ * GETHandler is a class that handles incoming GET requests to the server.
+ * It is responsible for processing the request and sending the appropriate response.
+ * The class provides a static method handle that takes the request and response objects as parameters.
+ * @class GETHandler
+ */
 export class GETHandler {
 
 
-
-    public static async handle(request: IncomingMessage, response: ServerResponse) {
+/**
+ * Handles incoming GET requests to the server.
+ * @static
+ * @param {IncomingMessage} request - The incoming request object.
+ * @param {ServerResponse} response - The response object to send the response.
+ * @returns {Promise<void>} - A promise that resolves when the response has been sent.
+ * @memberof GETHandler
+ */
+public static async handle(request: IncomingMessage, response: ServerResponse) {
 
     }
 }

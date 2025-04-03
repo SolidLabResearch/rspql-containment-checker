@@ -18,7 +18,21 @@ import { is_isomorphic } from "rspql-query-isomorphism";
 import { IncomingMessage, ServerResponse } from "http";
 import { ContainmentChecker } from "../../containment/ContainmentChecker";
 
+
+/**
+ * POSTHandler is a class that handles incoming POST requests to the server.
+ * @class POSTHandler
+ */
 export class POSTHandler {
+    /**
+     * Handles incoming POST requests.
+     * @static
+     * @param {IncomingMessage} request - The incoming HTTP request.
+     * @param {ServerResponse} response - The HTTP response to be sent back.
+     * @param {string} body - The body of the request.
+     * @returns {Promise<void>} - A promise that resolves when the request is handled.
+     * @memberof POSTHandler
+     */
     public static async handle(request: IncomingMessage, response: ServerResponse, body: string) {
         response.setHeader("Content-Type", "application/json");
 
@@ -36,10 +50,11 @@ export class POSTHandler {
 
         try {
             switch (request.url) {
-                case "/containment":
+                case "/containment": {
                     await this.handleQueryRelationships(parsedBody, response);
                     break;
-                default:
+                }
+                default: {
                     response.statusCode = 404;
                     const notFoundResponse = JSON.stringify({
                         error: "Not Found",
@@ -48,6 +63,7 @@ export class POSTHandler {
                     response.setHeader("Content-Length", Buffer.byteLength(notFoundResponse));
                     response.write(notFoundResponse);
                     response.end();
+                }
             }
         } catch (error) {
             if (!response.headersSent) {
@@ -63,6 +79,19 @@ export class POSTHandler {
         }
     }
 
+    /**
+     * Handles the relationship check between two queries to determine if one is contained in the other or if they are isomorphic.
+     * It uses the ContainmentChecker class to perform the containment check.
+     * If the queries are isomorphic, it sends a 200 response with isomorphism: true.
+     * If the containment check fails, it sends a 500 response with the error message.
+     * If the containment check is successful, it sends a 200 response with the containment result.
+     * @private
+     * @static
+     * @param {*} parsedBody - The parsed body of the request containing the subquery and superquery.
+     * @param {ServerResponse} response - The HTTP response to be sent back.
+     * @returns {*} - A promise that resolves when the request is handled.
+     * @memberof POSTHandler
+     */
     private static async handleQueryRelationships(parsedBody: any, response: ServerResponse) {
         const subquery = parsedBody.subquery;
         const superquery = parsedBody.superquery;
@@ -109,7 +138,5 @@ export class POSTHandler {
                 response.end();
             }
         }
-
-
     }
 }
