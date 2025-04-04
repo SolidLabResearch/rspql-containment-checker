@@ -15,6 +15,7 @@
 */
 
 import { RSPQLParser } from "../parser/RSPQLParser";
+import { ensurePromiseProperlyResolves } from "../util/Util";
 import { SPeCSWrapper } from "./SPeCSWrapper";
 
 /**
@@ -70,13 +71,10 @@ export class ContainmentChecker {
                 subquery: sparqlQuery1,
                 superquery: sparqlQuery2,
             };            
-
-            console.log(specsOptions);
-            
+                        
 
             const specsResult = await this.specsWrapper.runSPeCS(specsOptions);
-            console.log(specsResult);
-            
+            ensurePromiseProperlyResolves();            
 
             if (specsResult.exitCode !== 0) {
                 throw new Error(`SPeCS execution failed with exit code ${specsResult.exitCode}: ${specsResult.stderr}`);
