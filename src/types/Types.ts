@@ -14,7 +14,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
+/**
+ * Interface representing the options for the specs command.
+ * The options include:
+ * - `superquery`: The superquery to be used.
+ * - `subquery`: The subquery to be used.
+ * - `schema`: The schema to be used (optional).
+ * - `rename`: The rename option (optional).
+ * - `qc`: The quality control option (optional).
+ * @export
+ * @interface SpecsOptions
+ */
 export interface SpecsOptions {
     superquery: string;
     subquery: string;
@@ -23,6 +33,17 @@ export interface SpecsOptions {
     qc?: string;
 }
 
+/**
+ * Interface representing the result of the specs command.
+ * The result includes:
+ * - `stdout`: The standard output of the command.
+ * - `stderr`: The standard error of the command.
+ * - `exitCode`: The exit code of the command.
+ * - `containment`: A boolean indicating whether the containment was successful or not (optional).
+ * The `containment` property is optional and can be null if not applicable.
+ * @export
+ * @interface SpecsResult
+ */
 export interface SpecsResult {
     stdout: string;
     stderr: string;
@@ -30,6 +51,15 @@ export interface SpecsResult {
     containment: boolean | null;
 }
 
+/**
+ * Interface representing the API response.
+ * The response includes:
+ * - `success`: A boolean indicating whether the request was successful or not.
+ * - `data`: An object containing the result of the command (optional).
+ * - `error`: A string containing the error message (optional).
+ * @export
+ * @interface ApiResponse
+ */
 export interface ApiResponse {
     success: boolean;
     data?: {
