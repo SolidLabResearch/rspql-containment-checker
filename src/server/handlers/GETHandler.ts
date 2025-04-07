@@ -24,17 +24,21 @@ import { IncomingMessage, ServerResponse } from "http";
  * @class GETHandler
  */
 export class GETHandler {
-
-
-/**
- * Handles incoming GET requests to the server.
- * @static
- * @param {IncomingMessage} request - The incoming request object.
- * @param {ServerResponse} response - The response object to send the response.
- * @returns {Promise<void>} - A promise that resolves when the response has been sent.
- * @memberof GETHandler
- */
-public static async handle(request: IncomingMessage, response: ServerResponse) {
-
+    /**
+     * Handles incoming GET requests to the server.
+     * @static
+     * @param {IncomingMessage} request - The incoming request object.
+     * @param {ServerResponse} response - The response object to send the response.
+     * @returns {Promise<void>} - A promise that resolves when the response has been sent.
+     * @memberof GETHandler
+     */
+    public static async handle(request: IncomingMessage, response: ServerResponse) {
+        if (request.url === "/status" && request.method === "GET") {
+            response.writeHead(200, { "Content-Type": "application/json" });
+            response.end(JSON.stringify({ active: true }));
+        } else {
+            response.writeHead(404, { "Content-Type": "application/json" });
+            response.end(JSON.stringify({ error: "Not Found" }));
+        }
     }
 }

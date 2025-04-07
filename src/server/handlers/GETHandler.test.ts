@@ -14,9 +14,3 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-/**
- * Utility function to ensure that a promise resolves properly. 
- */
-export async function ensurePromiseProperlyResolves() {
-    await new Promise(resolve => setTimeout(resolve, 0));
-}

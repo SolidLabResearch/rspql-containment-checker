@@ -22,7 +22,6 @@
  * - `schema`: The schema to be used (optional).
  * - `rename`: The rename option (optional).
  * - `qc`: The quality control option (optional).
- * @export
  * @interface SpecsOptions
  */
 export interface SpecsOptions {
@@ -41,7 +40,6 @@ export interface SpecsOptions {
  * - `exitCode`: The exit code of the command.
  * - `containment`: A boolean indicating whether the containment was successful or not (optional).
  * The `containment` property is optional and can be null if not applicable.
- * @export
  * @interface SpecsResult
  */
 export interface SpecsResult {
@@ -57,7 +55,6 @@ export interface SpecsResult {
  * - `success`: A boolean indicating whether the request was successful or not.
  * - `data`: An object containing the result of the command (optional).
  * - `error`: A string containing the error message (optional).
- * @export
  * @interface ApiResponse
  */
 export interface ApiResponse {

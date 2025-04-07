@@ -24,34 +24,34 @@
 (assert (forall ((s RDFValue)(p RDFValue)(o RDFValue)(g RDFValue)) (=> (P s p o g) (P s p o <default_graph>))))
 
 ; ------------ IRIs ---------------------------------
+(declare-const	<a>	RDFValue)
 (declare-const	<p0_Resourse>	RDFValue)
+(declare-const	<p1_One>	RDFValue)
+(declare-const	<p1_Person>	RDFValue)
+(declare-const	<p1_hasAge>	RDFValue)
 (declare-const	<p1_w1>	RDFValue)
-(declare-const	<p2_x>	RDFValue)
-(declare-const	<p4_hasValue>	RDFValue)
-(declare-const	<p4_relatesToProperty>	RDFValue)
 (declare-const	<p_Property>	RDFValue)
 
 ; ------------ Literals -----------------------------
 
 ; ------------ Variables ----------------------------
-(declare-const	<v2_o>	RDFValue)
-(declare-const	<v2_s>	RDFValue)
+(declare-const	<v2_x>	RDFValue)
 
 ; ------------ Assumption ---------------------------
 (assert 
 	(and 
 		(and 
-			(P <v2_s> <p4_hasValue> <v2_o> <p1_w1>) 
-			(P <v2_s> <p4_relatesToProperty> <p2_x> <p1_w1>) 
+			(P <v2_x> <a> <p1_Person> <p1_w1>) 
+			(P <v2_x> <p1_hasAge> <p1_One> <p1_w1>) 
 		)
 	)
 )
 
 ; ------------ Conjecture ---------------------------
-(assert (not (exists ((<v1_o> RDFValue)(<v1_s> RDFValue)) 
+(assert (not (exists ((<v1_x> RDFValue)) 
 	(and 
-		(P <v1_s> <p4_hasValue> <v1_o> <p1_w1>) 
-		(and (= <v1_o> <v2_o>) )
+		(P <v1_x> <a> <p1_Person> <p1_w1>) 
+		(and (= <v1_x> <v2_x>) )
 	)
 )))
 
