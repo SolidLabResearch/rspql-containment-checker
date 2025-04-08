@@ -93,7 +93,8 @@ This indicates that the first query is contained in the second query.
 
 # Isomorphism Check
 
-The RSPQL Containment Checker also provides an isomorphism check for the two queries. The isomorphism check can also be performed using the  `POST /containment` endpoint. The request body should contain the following JSON object:
+The RSPQL Containment Checker also provides an isomorphism check for the two queries.Isomorphism relation is basically double containment on the both sides.
+The isomorphism check can also be performed using the  `POST /containment` endpoint. The request body should contain the following JSON object:
 ```json
 {
   "query1": "<RSP-QL query 1>",
