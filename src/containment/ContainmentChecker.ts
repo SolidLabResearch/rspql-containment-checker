@@ -54,7 +54,7 @@ export class ContainmentChecker {
     public async checkContainment(query1: string, query2: string): Promise<boolean> {
         const parsedQuery1 = this.parser.parse(query1);
         const parsedQuery2 = this.parser.parse(query2);
-        if (parsedQuery1.aggregation_function === parsedQuery2.aggregation_function && parsedQuery1.s2r[0].stream_name === parsedQuery2.s2r[0].stream_name) {
+        if (parsedQuery1.aggregation_function === parsedQuery2.aggregation_function) {
 
             if (!parsedQuery1 || !parsedQuery2) {
                 throw new Error("Failed to parse queries");
@@ -70,11 +70,14 @@ export class ContainmentChecker {
             const specsOptions = {
                 subquery: sparqlQuery1,
                 superquery: sparqlQuery2,
-            };            
-                        
+            };
+
+
+            console.log(specsOptions);
+
 
             const specsResult = await this.specsWrapper.runSPeCS(specsOptions);
-            ensurePromiseProperlyResolves();            
+            ensurePromiseProperlyResolves();
 
             if (specsResult.exitCode !== 0) {
                 throw new Error(`SPeCS execution failed with exit code ${specsResult.exitCode}: ${specsResult.stderr}`);
