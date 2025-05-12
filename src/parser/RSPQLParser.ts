@@ -48,6 +48,7 @@ export class RSPQLParser {
                 }
                 // Don’t add REGISTER to sparqlLines (pure SPARQL doesn’t need it)
                 originalSparqlLines.push(trimmed_line);
+                originalSparqlLines.push('PREFIX rsp: <http://rsp.org/>\n')
             } else if (trimmed_line.startsWith("FROM NAMED WINDOW")) {
                 const regexp = /FROM +NAMED +WINDOW +([^ ]+) +ON +STREAM +([^ ]+) +\[RANGE +([^ ]+) +STEP +([^ ]+)\]/g;
                 const matches = trimmed_line.matchAll(regexp);
@@ -64,8 +65,8 @@ export class RSPQLParser {
             } else {
                 let sparqlLine = trimmed_line;
                 if (sparqlLine.startsWith("WINDOW")) {
-                    sparqlLine = sparqlLine.replace("WINDOW", "GRAPH");
-                }
+                    sparqlLine = sparqlLine.replace(/WINDOW\s+[^ ]+\s*\{/, "GRAPH rsp:window {");
+                }                
                 if (sparqlLine.startsWith("PREFIX")) {
                     const regexp = /PREFIX +([^:]*): +<([^>]+)>/g;
                     const matches = trimmed_line.matchAll(regexp);
@@ -73,7 +74,13 @@ export class RSPQLParser {
                         prefixMapper.set(match[1], match[2]);
                         parsed.prefixes.set(match[1], match[2]);
                     }
+
+                    if (!prefixMapper.has('rsp')) {
+                        prefixMapper.set('rsp', 'http://rsp.org/');
+                        parsed.prefixes.set('rsp', 'http://rsp.org/');
+                    }
                 }
+
                 if (sparqlLine.startsWith("SELECT")) {
                     // Simplify SELECT for sparqlLines using the variable inside aggregation
                     const aggMatch = sparqlLine.match(/SELECT\s*\(?([A-Z]+)\(\?([^)]+)\)\s*(?:AS|as)\s*\?([a-zA-Z0-9]+)\)?/i);
@@ -93,6 +100,8 @@ export class RSPQLParser {
 
         // Ensure parsed.sparql is pure SPARQL
         parsed.sparql = sparqlLines.join("\n");
+        const finalQuery = `PREFIX rsp: <http://rsp.org/>\n` + parsed.sparql;
+        parsed.set_sparql(finalQuery);
 
         // Parse the original SPARQL portion with aggregations for metadata
         const sparqlOnlyLines = originalSparqlLines.filter(
