@@ -40,6 +40,8 @@ test('test_r2s', async () => {
     const parsed_query = parser.parse(advanced_query);
     console.log(parsed_query.sparql);
     const expected_r2s = {operator: "RStream", name: "output"};
+    console.log(parsed_query.r2s.operator);
+    
     expect(parsed_query.r2s).toStrictEqual(expected_r2s);
 
 });
