@@ -14,7 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { RSPQLParser } from "../parser/RSPQLParser";
+import { ParsedQuery, RSPQLParser } from "../parser/RSPQLParser";
 import { ensurePromiseProperlyResolves } from "../util/Util";
 import { SPeCSWrapper } from "./SPeCSWrapper";
 
@@ -54,9 +54,9 @@ export class ContainmentChecker {
     public async checkContainment(query1: string, query2: string): Promise<boolean> {
         const parsedQuery1 = this.parser.parse(query1);
         const parsedQuery2 = this.parser.parse(query2);
-        if (parsedQuery1.r2s.operator === parsedQuery2.r2s.operator) {
-            if (parsedQuery1.aggregation_function === parsedQuery2.aggregation_function) {
 
+        if (this.isR2SOperatorContained(parsedQuery1, parsedQuery2)) {
+            if (parsedQuery1.aggregation_function === parsedQuery2.aggregation_function) {
                 if (!parsedQuery1 || !parsedQuery2) {
                     throw new Error("Failed to parse queries");
                 }
@@ -88,6 +88,26 @@ export class ContainmentChecker {
             else {
                 return false;
             }
+        }
+        else {
+            return false;
+        }
+    }
+
+
+    /**
+     * Checks if the R2S operators of the RSP-QL queries are contained or not.
+     * @param {ParsedQuery} parsedQuery1 - Parsed version of the first RSPQL query.
+     * @param {ParsedQuery} parsedQuery2 - Parsed version of the second RSPQL query.
+     * @returns {boolean} - True if it is contained, or false if it is not. 
+     * @memberof ContainmentChecker
+     */
+    isR2SOperatorContained(parsedQuery1: ParsedQuery, parsedQuery2: ParsedQuery): boolean {
+        if (parsedQuery1.r2s.operator === parsedQuery2.r2s.operator) {
+            return true;
+        }
+        else if ((parsedQuery1.r2s.operator === "IStream" || parsedQuery1.r2s.operator === "DStream") && parsedQuery2.r2s.operator === "RStream") {
+            return true;
         }
         else {
             return false;
