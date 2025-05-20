@@ -57,6 +57,7 @@ export class ContainmentChecker {
 
         if (this.isR2SOperatorContained(parsedQuery1, parsedQuery2)) {
             if (parsedQuery1.aggregation_function === parsedQuery2.aggregation_function) {
+                
                 if (!parsedQuery1 || !parsedQuery2) {
                     throw new Error("Failed to parse queries");
                 }

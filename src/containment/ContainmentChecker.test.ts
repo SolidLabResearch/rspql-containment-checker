@@ -226,4 +226,35 @@ WHERE {
     const result = await containmentChecker.checkContainment(subQuery, superQuery);
     expect(result).toBe(true);
   });
+
+  test("check containment for different R2S operators", async () => {
+    const subQuery = `
+    PREFIX ex: <http://example.org/>
+REGISTER IStream <output> AS
+SELECT (AVG(?age) AS ?averageAge)
+FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
+WHERE {
+  WINDOW ex:w1 { 
+    ?person a ex:Employee.
+    ?person ex:hasAge ?age.
+  }
+}`;
+
+    const superQuery = `
+PREFIX ex: <http://example.org/>
+REGISTER RStream <output> AS
+SELECT (AVG(?age) AS ?avgSubsetAge)
+FROM NAMED WINDOW ex:w2 ON STREAM ex:stream1 [RANGE 10 STEP 5]
+WHERE {
+  WINDOW ex:w2 {
+    ?person ex:hasAge ?age.
+  }
+}`;
+
+
+    const containmentChecker = new ContainmentChecker();
+    const result = await containmentChecker.checkContainment(subQuery, superQuery);
+    expect(result).toBe(true);
+  })
+
 });

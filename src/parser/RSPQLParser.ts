@@ -65,8 +65,19 @@ export class RSPQLParser {
             } else {
                 let sparqlLine = trimmed_line;
                 if (sparqlLine.startsWith("WINDOW")) {
-                    sparqlLine = sparqlLine.replace(/WINDOW\s+[^ ]+\s*\{/, "GRAPH rsp:window {");
-                }                
+                    const windowMatch = sparqlLine.match(/WINDOW\s+([^ ]+)\s*\{/);
+                    if (windowMatch) {
+                        const windowNameRaw = windowMatch[1];         // e.g., ":w1"
+                        const windowNameFull = this.unwrap(windowNameRaw, prefixMapper); // e.g., "http://example.org/w1"
+
+                        const matchingS2R = parsed.s2r.find(w => w.window_name === windowNameFull);
+                        if (matchingS2R) {
+                            sparqlLine = sparqlLine.replace(/WINDOW\s+[^ ]+\s*\{/, `GRAPH ${this.iriToPrefixedName(matchingS2R.stream_name, prefixMapper)} {`);
+                        } else {
+                            console.warn(`No stream found for window: ${windowNameRaw}`);
+                        }
+                    }
+                }
                 if (sparqlLine.startsWith("PREFIX")) {
                     const regexp = /PREFIX +([^:]*): +<([^>]+)>/g;
                     const matches = trimmed_line.matchAll(regexp);
@@ -80,18 +91,22 @@ export class RSPQLParser {
                         parsed.prefixes.set('rsp', 'http://rsp.org/');
                     }
                 }
-
                 if (sparqlLine.startsWith("SELECT")) {
-                    // Simplify SELECT for sparqlLines using the variable inside aggregation
-                    const aggMatch = sparqlLine.match(/SELECT\s*\(?([A-Z]+)\(\?([^)]+)\)\s*(?:AS|as)\s*\?([a-zA-Z0-9]+)\)?/i);
-                    if (aggMatch) {
-                        const aggVar = `?${aggMatch[2]}`; // e.g., ?x (variable inside AVG)
-                        sparqlLines.push(`SELECT ${aggVar}`);
+                    // If line contains aggregation but not wrapped in parentheses, wrap it
+                    const aggRegex = /SELECT\s+([A-Z]+\(.*\))\s+AS\s+\?([a-zA-Z0-9]+)/i;
+                    const match = sparqlLine.match(aggRegex);
+
+                    if (match) {
+                        // match[1] = e.g. AVG(?v), match[2] = variable name
+                        // Wrap entire aggregation as required by sparqljs parser:                        
+                        sparqlLines.push(`SELECT (${match[1]} AS ?${match[2]})`);
                     } else {
                         sparqlLines.push(sparqlLine);
                     }
-                    originalSparqlLines.push(trimmed_line); // Keep original for sparqljs
-                } else if (sparqlLine) {
+                    originalSparqlLines.push(trimmed_line);
+                }
+
+                else if (sparqlLine) {
                     sparqlLines.push(sparqlLine);
                     originalSparqlLines.push(sparqlLine);
                 }
@@ -100,16 +115,36 @@ export class RSPQLParser {
 
         // Ensure parsed.sparql is pure SPARQL
         parsed.sparql = sparqlLines.join("\n");
-        const finalQuery = `PREFIX rsp: <http://rsp.org/>\n` + parsed.sparql;
-        parsed.set_sparql(finalQuery);
 
+
+
+        for (let sparqlLine of originalSparqlLines) {
+            if (sparqlLine.includes("GRAPH <")) {
+                sparqlLine = sparqlLine.replace(/GRAPH +<([^>]+)>/g, (_, iri) => {
+                    return `GRAPH ${this.iriToPrefixedName(iri, prefixMapper)}`;
+                });
+            }
+
+        }
+
+
+        const prefixes = Array.from(parsed.prefixes.entries())
+            .map(([prefix, iri]) => `PREFIX ${prefix}: <${iri}>`)
+            .join("\n");
+
+
+
+        const finalQuery = `${prefixes}\n\n\n${parsed.sparql}`;
+        parsed.set_sparql(finalQuery);
         // Parse the original SPARQL portion with aggregations for metadata
-        const sparqlOnlyLines = originalSparqlLines.filter(
+        const sparqlOnlyLines = sparqlLines.filter(
             line => !line.includes("FROM NAMED WINDOW") && !line.includes("REGISTER")
         );
 
+
         const sparqlOnlyQuery = sparqlOnlyLines.join("\n");
         try {
+            console.log(sparqlOnlyQuery);
             const parsedSparql = this.sparqlParser.parse(sparqlOnlyQuery);
             this.extractAggregations(parsedSparql, parsed);
         } catch (error) {
@@ -156,6 +191,17 @@ export class RSPQLParser {
             return "";
         }
     }
+
+    iriToPrefixedName(iri: string, prefixMapper: Map<string, string>): string {
+        for (const [prefix, ns] of prefixMapper.entries()) {
+            if (iri.startsWith(ns)) {
+                return `${prefix}:${iri.slice(ns.length)}`;
+            }
+        }
+        // Return as-is if no prefix matched
+        return `<${iri}>`;
+    }
+
 }
 
 /**
