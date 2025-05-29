@@ -1,19 +1,3 @@
-/*
-    Copyright (C) 2025 Kush Bisen (UGent - imec)
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-
 const { Parser: SparqlParser } = require('sparqljs');
 
 /**
@@ -48,7 +32,6 @@ export class RSPQLParser {
                 }
                 // Don’t add REGISTER to sparqlLines (pure SPARQL doesn’t need it)
                 originalSparqlLines.push(trimmed_line);
-                originalSparqlLines.push('PREFIX rsp: <http://rsp.org/>\n')
             } else if (trimmed_line.startsWith("FROM NAMED WINDOW")) {
                 const regexp = /FROM +NAMED +WINDOW +([^ ]+) +ON +STREAM +([^ ]+) +\[RANGE +([^ ]+) +STEP +([^ ]+)\]/g;
                 const matches = trimmed_line.matchAll(regexp);
@@ -65,18 +48,7 @@ export class RSPQLParser {
             } else {
                 let sparqlLine = trimmed_line;
                 if (sparqlLine.startsWith("WINDOW")) {
-                    const windowMatch = sparqlLine.match(/WINDOW\s+([^ ]+)\s*\{/);
-                    if (windowMatch) {
-                        const windowNameRaw = windowMatch[1];         // e.g., ":w1"
-                        const windowNameFull = this.unwrap(windowNameRaw, prefixMapper); // e.g., "http://example.org/w1"
-
-                        const matchingS2R = parsed.s2r.find(w => w.window_name === windowNameFull);
-                        if (matchingS2R) {
-                            sparqlLine = sparqlLine.replace(/WINDOW\s+[^ ]+\s*\{/, `GRAPH ${this.iriToPrefixedName(matchingS2R.stream_name, prefixMapper)} {`);
-                        } else {
-                            console.warn(`No stream found for window: ${windowNameRaw}`);
-                        }
-                    }
+                    sparqlLine = sparqlLine.replace("WINDOW", "GRAPH");
                 }
                 if (sparqlLine.startsWith("PREFIX")) {
                     const regexp = /PREFIX +([^:]*): +<([^>]+)>/g;
@@ -85,28 +57,18 @@ export class RSPQLParser {
                         prefixMapper.set(match[1], match[2]);
                         parsed.prefixes.set(match[1], match[2]);
                     }
-
-                    if (!prefixMapper.has('rsp')) {
-                        prefixMapper.set('rsp', 'http://rsp.org/');
-                        parsed.prefixes.set('rsp', 'http://rsp.org/');
-                    }
                 }
                 if (sparqlLine.startsWith("SELECT")) {
-                    // If line contains aggregation but not wrapped in parentheses, wrap it
-                    const aggRegex = /SELECT\s+([A-Z]+\(.*\))\s+AS\s+\?([a-zA-Z0-9]+)/i;
-                    const match = sparqlLine.match(aggRegex);
-
-                    if (match) {
-                        // match[1] = e.g. AVG(?v), match[2] = variable name
-                        // Wrap entire aggregation as required by sparqljs parser:                        
-                        sparqlLines.push(`SELECT (${match[1]} AS ?${match[2]})`);
+                    // Simplify SELECT for sparqlLines using the variable inside aggregation
+                    const aggMatch = sparqlLine.match(/SELECT\s*\(?([A-Z]+)\(\?([^)]+)\)\s*(?:AS|as)\s*\?([a-zA-Z0-9]+)\)?/i);
+                    if (aggMatch) {
+                        const aggVar = `?${aggMatch[2]}`; // e.g., ?x (variable inside AVG)
+                        sparqlLines.push(`SELECT ${aggVar}`);
                     } else {
                         sparqlLines.push(sparqlLine);
                     }
-                    originalSparqlLines.push(trimmed_line);
-                }
-
-                else if (sparqlLine) {
+                    originalSparqlLines.push(trimmed_line); // Keep original for sparqljs
+                } else if (sparqlLine) {
                     sparqlLines.push(sparqlLine);
                     originalSparqlLines.push(sparqlLine);
                 }
@@ -116,35 +78,13 @@ export class RSPQLParser {
         // Ensure parsed.sparql is pure SPARQL
         parsed.sparql = sparqlLines.join("\n");
 
-
-
-        for (let sparqlLine of originalSparqlLines) {
-            if (sparqlLine.includes("GRAPH <")) {
-                sparqlLine = sparqlLine.replace(/GRAPH +<([^>]+)>/g, (_, iri) => {
-                    return `GRAPH ${this.iriToPrefixedName(iri, prefixMapper)}`;
-                });
-            }
-
-        }
-
-
-        const prefixes = Array.from(parsed.prefixes.entries())
-            .map(([prefix, iri]) => `PREFIX ${prefix}: <${iri}>`)
-            .join("\n");
-
-
-
-        const finalQuery = `${prefixes}\n\n\n${parsed.sparql}`;
-        parsed.set_sparql(finalQuery);
         // Parse the original SPARQL portion with aggregations for metadata
-        const sparqlOnlyLines = sparqlLines.filter(
+        const sparqlOnlyLines = originalSparqlLines.filter(
             line => !line.includes("FROM NAMED WINDOW") && !line.includes("REGISTER")
         );
 
-
         const sparqlOnlyQuery = sparqlOnlyLines.join("\n");
         try {
-            console.log(sparqlOnlyQuery);
             const parsedSparql = this.sparqlParser.parse(sparqlOnlyQuery);
             this.extractAggregations(parsedSparql, parsed);
         } catch (error) {
@@ -191,17 +131,6 @@ export class RSPQLParser {
             return "";
         }
     }
-
-    iriToPrefixedName(iri: string, prefixMapper: Map<string, string>): string {
-        for (const [prefix, ns] of prefixMapper.entries()) {
-            if (iri.startsWith(ns)) {
-                return `${prefix}:${iri.slice(ns.length)}`;
-            }
-        }
-        // Return as-is if no prefix matched
-        return `<${iri}>`;
-    }
-
 }
 
 /**
