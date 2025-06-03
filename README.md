@@ -33,6 +33,30 @@ async function checkContainment(subquery: string, superquery: string) {
         console.error(`Error checking containment: ${error.message}`);
     }
 }
+
+// Example usage
+let subquery = `PREFIX ex: <http://example.org/>
+REGISTER RStream <output> AS
+SELECT (COUNT(?x) AS ?count)
+FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
+WHERE {
+    WINDOW ex:w1 { ?x a ex:Person. }
+}`;
+
+let superquery = `PREFIX ex: <http://example.org/>
+REGISTER RStream <output> AS
+SELECT (COUNT(?x) AS ?count)
+FROM NAMED WINDOW ex:w1 ON STREAM ex:stream1 [RANGE 10 STEP 5]
+WHERE {
+  WINDOW ex:w1 { 
+    ?x a ex:Person.
+    ?x ex:hasAge ex:One.
+  }
+}`;
+
+
+console.log(checkContainment(subquery, superquery));
+// Output: Containment result: true
 ```
 
 where `subquery` and `superquery` are the RSP-QL queries you want to check for containment. The `checkContainment` method will return a boolean value indicating whether the `subquery` is contained in the `superquery`.
