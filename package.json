@@ -1,6 +1,6 @@
 {
     "name": "rspql-containment-checker",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "Tool determining the containment relation in between two RSPQL queries.",
     "main": "dist/index.js",
     "scripts": {
@@ -8,8 +8,8 @@
         "start": "node dist/index.js",
         "test": "jest --coverage",
         "test:watch": "jest --watch",
-        "lint:ts": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0"
-
+        "lint:ts": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
+        "release": "npm run build && npm publish --access public"
     },
     "keywords": [],
     "author": "Kushagra Singh Bisen",
