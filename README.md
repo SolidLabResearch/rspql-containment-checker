@@ -11,18 +11,49 @@ To run the RSPQL Containment Checker, you need to have the following software in
 - [npm](https://www.npmjs.com/) (v9.0.0 or higher)
 - [Z3 Solver](https://github.com/Z3Prover/z3) needs to be installed as well to execute the tool.
 
-# Installation
-To install the RSPQL Containment Checker, follow these steps:
+# Usage
 
-1. Install the relevant dependencies:
+The RSPQL containment checker can be utilized as a NPM package or as a standalone tool. It is designed to be used in a Node.js environment, and it can be integrated into other applications or used as a command-line tool.
+
+To use the RSPQL Containment Checker as a NPM package, you can install it using the following command:
+```bash
+npm install rspql-containment-checker
+```
+You can then import the package in your Node.js application and use it to check the containment of RSP-QL queries. Here is an example of how to use the package:
+
+```ts
+import { ContainmentChecker } from "rspql-containment-checker";
+
+async function checkContainment(subquery: string, superquery: string) {
+    const checker = new ContainmentChecker();
+    try {
+        const result = await checker.checkContainment(subquery, superquery);
+        console.log(`Containment result: ${result.containment}`);
+    } catch (error) {
+        console.error(`Error checking containment: ${error.message}`);
+    }
+}
+```
+
+where `subquery` and `superquery` are the RSP-QL queries you want to check for containment. The `checkContainment` method will return a boolean value indicating whether the `subquery` is contained in the `superquery`.
+
+# Using as a Standalone Tool 
+
+To install the RSPQL Containment Checker, follow these steps:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/SolidLabResearch/rspql-containment-checker.git
+   ```
+
+2. Install the relevant dependencies:
    ```bash
    npm install
    ```
-2. Build the project:
+3. Build the project:
    ```bash
    npm run build
    ```
-3. Start the containment checker tool with
+4. Start the containment checker tool with
    ```bash
    npm run start containment-checker
    ```

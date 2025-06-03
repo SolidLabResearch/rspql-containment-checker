@@ -1,8 +1,9 @@
 {
     "name": "rspql-containment-checker",
-    "version": "2.0.0",
+    "version": "2.3.0",
     "description": "Tool determining the containment relation in between two RSPQL queries.",
     "main": "dist/index.js",
+    "bin": {"rspql-containment-checker": "dist/cli.js"},
     "scripts": {
         "build": "npx tsc",
         "start": "node dist/index.js",
