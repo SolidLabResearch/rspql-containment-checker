@@ -47,9 +47,9 @@ export class RSPQLParser {
                 originalSparqlLines.push(trimmed_line);
             } else {
                 let sparqlLine = trimmed_line;
-                if (sparqlLine.startsWith("WINDOW")) {
-                    sparqlLine = sparqlLine.replace("WINDOW", "GRAPH");
-                }
+                // Replace all occurrences of WINDOW with GRAPH in any position
+                sparqlLine = sparqlLine.replace(/\bWINDOW\b/g, "GRAPH");
+
                 if (sparqlLine.startsWith("PREFIX")) {
                     const regexp = /PREFIX +([^:]*): +<([^>]+)>/g;
                     const matches = trimmed_line.matchAll(regexp);
@@ -83,7 +83,17 @@ export class RSPQLParser {
             line => !line.includes("FROM NAMED WINDOW") && !line.includes("REGISTER")
         );
 
-        const sparqlOnlyQuery = sparqlOnlyLines.join("\n");
+        // Build pure SPARQL for parsing
+        let sparqlOnlyQuery = sparqlOnlyLines.join('\n');
+        // Ensure there is a space between closing parenthesis of SELECT and WHERE
+        sparqlOnlyQuery = sparqlOnlyQuery.replace(/\)(WHERE)/g, ") $1");
+        sparqlOnlyQuery = sparqlOnlyQuery.replace(/(\w)(WHERE)/g, "$1 $2");
+        parsed.sparql = sparqlOnlyQuery;
+        parsed.set_sparql(sparqlOnlyQuery);
+
+        // Debug log
+        console.log("[RSPQLParser] SPARQL passed to sparqljs parser:\n", sparqlOnlyQuery);
+
         try {
             const parsedSparql = this.sparqlParser.parse(sparqlOnlyQuery);
             this.extractAggregations(parsedSparql, parsed);

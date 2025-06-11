@@ -74,13 +74,20 @@ export class ContainmentChecker {
                     superquery: sparqlQuery2,
                 };
 
+                console.log(specsOptions);
+                
                 const specsResult = await this.specsWrapper.runSPeCS(specsOptions);
                 ensurePromiseProperlyResolves();
 
                 if (specsResult.exitCode !== 0) {
-                    throw new Error(`SPeCS execution failed with exit code ${specsResult.exitCode}: ${specsResult.stderr}`);
+                    console.log(specsResult);
+                    
+                    return false; // SPeCS execution failed, return false
                 }
                 if (specsResult.containment === null) {
+                    console.log(specsResult);
+                    
+                    return false; // SPeCS execution returned null containment result, return false
                     throw new Error(`SPeCS execution returned null containment result: ${specsResult.stdout}`);
                 }
 

@@ -1,6 +1,7 @@
 # RSPQL Containment Checker
 
 The RSPQL Containment Checker is a tool that extends the [SPeCS](https://github.com/mirkospasic/SpeCS) SPARQL Containment solver to check containment between two RSP-QL queries. The RSP-QL queries are translated to SPARQL queries, along with their streaming semantics, and then the containment is checked using the SPeCS tool for the SPARQL queries. The streaming semantics are utilized to determine if the RSP-QL queries are on the same data source and if they are compatible for containment checking.
+
 Once the compatibility is established, the containment checking is performed using the SPeCS tool. 
 
 The RSP-QL containment checker is presented as a HTTP service that can be accessed via a REST API. The server accepts RSP-QL queries and returns the containment result. The RSP-QL containment checker is implemented with Typescript and Node.js. 

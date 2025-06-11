@@ -54,7 +54,7 @@ export class SPeCSWrapper {
         };
 
         const process = spawn(executablePath, args, spawnOptions);
-                
+                        
         let stdout = '';
         let stderr = '';
 

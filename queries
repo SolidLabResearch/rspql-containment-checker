@@ -1,0 +1,27 @@
+subquery:
+PREFIX dahccsensors : <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX saref : <https://saref.etsi.org/core/>
+PREFIX ex : <https://rsp.js>
+SELECT ?o
+WHERE {
+    GRAPH ex:w1 {
+        ?s saref:hasValue ?o .
+        ?s saref:relatesToProperty dahccsensors:x .
+    }  
+}
+superquery:
+PREFIX dahccsensors : <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX saref : <https://saref.etsi.org/core/>
+PREFIX ex: <https://rsp.js>
+SELECT ?o2 ?o
+WHERE {
+    {GRAPH ex:w1 {
+        ?s saref:hasValue ?o .
+        ?s saref:relatesToProperty dahccsensors:x .
+    }}
+    UNION 
+    {GRAPH ex:w2 {
+        ?s saref:hasValue ?o2 .
+        ?s saref:relatesToProperty dahccsensors:y .
+    }}
+}

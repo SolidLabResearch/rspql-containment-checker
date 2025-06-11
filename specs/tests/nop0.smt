@@ -26,9 +26,11 @@
 ; ------------ IRIs ---------------------------------
 (declare-const	<iri0>	RDFValue)
 (declare-const	<iri1>	RDFValue)
+(declare-const	<p0_Resourse>	RDFValue)
 (declare-const	<p1_nesto1>	RDFValue)
 (declare-const	<p1_nesto2>	RDFValue)
 (declare-const	<p1_takesCourse>	RDFValue)
+(declare-const	<p_Property>	RDFValue)
 
 ; ------------ Literals -----------------------------
 (declare-const	<l_0>	RDFValue)
@@ -48,23 +50,11 @@
 )
 
 ; ------------ Conjecture ---------------------------
-(assert (not (exists ((<v2_a> RDFValue)(<v2_b> RDFValue)(<v2_x> RDFValue)) 
+(assert (not (exists ((<v2_x> RDFValue)(<v2_a> RDFValue)(<v2_b> RDFValue)) 
 	(and 
 		(or (P <v2_x> <p1_takesCourse> <l_0> <iri0>) (P <v2_x> <p1_takesCourse> <l_0> <iri1>) )
-		(or 
-			(and 
-				(or (P <v2_x> <p1_nesto1> <v2_a> <iri0>) (P <v2_x> <p1_nesto1> <v2_a> <iri1>) )
-				(or (P <v2_x> <p1_nesto2> <v2_b> <iri0>) (P <v2_x> <p1_nesto2> <v2_b> <iri1>) )
-			)
-			(forall ((<v2_a> RDFValue)(<v2_b> RDFValue))
-				(not 
-					(and 
-						(or (P <v2_x> <p1_nesto1> <v2_a> <iri0>) (P <v2_x> <p1_nesto1> <v2_a> <iri1>) )
-						(or (P <v2_x> <p1_nesto2> <v2_b> <iri0>) (P <v2_x> <p1_nesto2> <v2_b> <iri1>) )
-					)
-				)
-			)
-		)
+		(or (P <v2_x> <p1_nesto1> <v2_a> <iri0>) (P <v2_x> <p1_nesto1> <v2_a> <iri1>) )
+		(or (P <v2_x> <p1_nesto2> <v2_b> <iri0>) (P <v2_x> <p1_nesto2> <v2_b> <iri1>) )
 		(and (= <v2_x> <v1_x>) )
 	)
 )))
