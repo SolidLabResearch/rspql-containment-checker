@@ -84,13 +84,15 @@ export class SPeCSWrapper {
         let containment: boolean | null = null;        
         if (exitCode === 0) {
             const output = stdout.trim().toLowerCase();
-            if (output === 'unsat') containment = true;
-            else if (output === 'sat - 0') containment = false;
+            // SPeCS returns 'sat - 1' for containment true, 'sat - 0' for false, 'unsat' for true in some configs
+            if (output.startsWith('sat - 1')) containment = true;
+            else if (output.startsWith('sat - 0')) containment = false;
+            else if (output.startsWith('unsat')) containment = true;
             else containment = null;
         } else {
             throw new Error(`SPeCS process exited with code ${exitCode}: ${stderr}`);
         }
 
         return { stdout, stderr, exitCode, containment };
-    }
+    }       
 }
