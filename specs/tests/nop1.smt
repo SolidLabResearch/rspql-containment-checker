@@ -24,9 +24,7 @@
 (assert (forall ((s RDFValue)(p RDFValue)(o RDFValue)(g RDFValue)) (=> (P s p o g) (P s p o <default_graph>))))
 
 ; ------------ IRIs ---------------------------------
-(declare-const	<p0_Resourse>	RDFValue)
 (declare-const	<p1_takesCourse>	RDFValue)
-(declare-const	<p_Property>	RDFValue)
 
 ; ------------ Literals -----------------------------
 (declare-const	<l_0>	RDFValue)
@@ -38,15 +36,15 @@
 ; ------------ Assumption ---------------------------
 (assert 
 	(and 
-		(P <v2_x> <p1_takesCourse> <l_0> <default_graph>) 
+		(or (P <v2_x> <p1_takesCourse> <l_0> <default_graph>) )
 	)
 )
 
 ; ------------ Conjecture ---------------------------
 (assert (not (exists ((<v1_x> RDFValue)) 
 	(and 
-		(P <v1_x> <p1_takesCourse> <l_0> <default_graph>) 
-		(P <v1_x> <p1_takesCourse> <l_1> <default_graph>) 
+		(or (P <v1_x> <p1_takesCourse> <l_0> <default_graph>) )
+		(or (P <v1_x> <p1_takesCourse> <l_1> <default_graph>) )
 		(and (= <v1_x> <v2_x>) )
 	)
 )))
