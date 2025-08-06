@@ -13,6 +13,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+import { parse_sparql_query } from "rspql-query-isomorphism";
 import {RSPQLParser} from "./RSPQLParser";
 
 
@@ -136,3 +137,90 @@ WHERE {
     const parsed_query = parser.parse(superQuery);
     console.log(parsed_query.sparql);
 });
+
+test("parse UNION queries", async () => {
+        const registeredQuery = `
+PREFIX mqtt_broker: <mqtt://localhost:1883/>
+PREFIX saref: <https://saref.etsi.org/core/>
+PREFIX dahccsensors: <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX : <https://rsp.js> 
+REGISTER RStream <output> AS
+SELECT (AVG(?o) AS ?avgWearableX) (AVG(?o2) AS ?avgSmartphoneX) 
+FROM NAMED WINDOW :w1 ON STREAM mqtt_broker:wearableX [RANGE 120000 STEP 60000]
+FROM NAMED WINDOW :w2 ON STREAM mqtt_broker:smartphoneX [RANGE 120000 STEP 60000]
+WHERE {
+   { 
+    WINDOW :w1 {
+        ?s1 saref:hasValue ?o .
+        ?s1 saref:relatesToProperty dahccsensors:wearableX .
+}}
+    UNION
+    { 
+    WINDOW :w2 {
+        ?s2 saref:hasValue ?o2 .
+        ?s2 saref:relatesToProperty dahccsensors:smartphoneX .
+    }}
+}
+    `;
+   const parser = new RSPQLParser();
+   const parsed_query = parser.parse(registeredQuery);
+   console.log(parsed_query.sparql);
+
+});
+
+test("parse queries with GRAPH", async () => {
+        const query1 = `
+            PREFIX mqtt_broker: <mqtt://localhost:1883/>
+    PREFIX saref: <https://saref.etsi.org/core/>
+PREFIX dahccsensors: <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX : <https://rsp.js> 
+REGISTER RStream <output> AS
+SELECT (AVG(?o) AS ?avgWearableX)
+FROM NAMED WINDOW :w1 ON STREAM mqtt_broker:wearableX [RANGE 60000 STEP 60000]
+WHERE {
+    WINDOW :w1 {
+        ?s1 saref:hasValue ?o .
+        ?s1 saref:relatesToProperty dahccsensors:wearableX .
+    }
+}
+    `;
+
+    const parser = new RSPQLParser();
+    const parsed_query = parser.parse(query1);
+    console.log(parsed_query);
+});
+
+test("parsing subqueries with WINDOW", async () => {
+   const query = `PREFIX mqtt_broker: <mqtt://localhost:1883/>
+PREFIX saref: <https://saref.etsi.org/core/>
+PREFIX dahccsensors: <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX : <https://rsp.js>
+REGISTER RStream <output> AS
+SELECT ?avgCombinedX ?avgCombinedX2
+FROM NAMED WINDOW :w1 ON STREAM mqtt_broker:wearableX [RANGE 10 STEP 2]
+FROM NAMED WINDOW :w2 ON STREAM mqtt_broker:smartphoneX [RANGE 10 STEP 2]
+WHERE {
+    {
+        SELECT (AVG(?o) AS ?avgCombinedX)
+        WHERE {
+            WINDOW :w1 {
+                ?s saref:hasValue ?o .
+                ?s saref:relatesToProperty dahccsensors:wearableX .
+            }
+        }
+    }
+    {
+        SELECT (AVG(?o2) AS ?avgCombinedX2)
+        WHERE {
+            WINDOW :w2 {
+                ?s2 saref:hasValue ?o2 .
+                ?s2 saref:relatesToProperty dahccsensors:smartphoneX .
+            }
+        }
+    }
+}`;
+
+    const parser = new RSPQLParser();
+    const parsed_query = parser.parse(query);
+    console.log(parsed_query.sparql);
+})

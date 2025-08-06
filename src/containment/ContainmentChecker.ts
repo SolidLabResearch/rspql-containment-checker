@@ -51,9 +51,9 @@ export class ContainmentChecker {
      * @returns {Promise<boolean>} - Returns a promise that resolves to true if the first query is contained in the second, false otherwise.
      * @memberof ContainmentChecker
      */
-    public async checkContainment(query1: string, query2: string): Promise<boolean> {
-        const parsedQuery1 = this.parser.parse(query1);
-        const parsedQuery2 = this.parser.parse(query2);
+    public async checkContainment(subQuery: string, superQuery: string): Promise<boolean> {
+        const parsedQuery1 = this.parser.parse(subQuery);
+        const parsedQuery2 = this.parser.parse(superQuery);
 
         if (this.isR2SOperatorContained(parsedQuery1, parsedQuery2)) {
             if (parsedQuery1.aggregation_function === parsedQuery2.aggregation_function) {

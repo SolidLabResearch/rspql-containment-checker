@@ -14,7 +14,12 @@ export class RSPQLParser {
      */
     parse(query: string): ParsedQuery {
         const parsed = new ParsedQuery();
-        const split = query.split(/\r?\n/);
+        // Remove aggregation functions from all SELECT statements (main and nested)
+        let queryNoAgg = query.replace(/SELECT\s*\((?:AVG|COUNT|SUM|MIN|MAX)\(\?([^)]+)\)\s+AS\s+\?([a-zA-Z0-9_]+)\)/gi, 'SELECT ?$1');
+        // Also handle multiple aggregations in one SELECT
+        queryNoAgg = queryNoAgg.replace(/\((?:AVG|COUNT|SUM|MIN|MAX)\(\?([^)]+)\)\s+AS\s+\?([a-zA-Z0-9_]+)\)/gi, '?$1');
+
+        const split = queryNoAgg.split(/\r?\n/);
         const sparqlLines = new Array<string>();
         const originalSparqlLines = new Array<string>(); // For sparqljs parsing with aggregations
         const prefixMapper = new Map<string, string>();
@@ -58,20 +63,8 @@ export class RSPQLParser {
                         parsed.prefixes.set(match[1], match[2]);
                     }
                 }
-                if (sparqlLine.startsWith("SELECT")) {
-                    // Simplify SELECT for sparqlLines using the variable inside aggregation
-                    const aggMatch = sparqlLine.match(/SELECT\s*\(?([A-Z]+)\(\?([^)]+)\)\s*(?:AS|as)\s*\?([a-zA-Z0-9]+)\)?/i);
-                    if (aggMatch) {
-                        const aggVar = `?${aggMatch[2]}`; // e.g., ?x (variable inside AVG)
-                        sparqlLines.push(`SELECT ${aggVar}`);
-                    } else {
-                        sparqlLines.push(sparqlLine);
-                    }
-                    originalSparqlLines.push(trimmed_line); // Keep original for sparqljs
-                } else if (sparqlLine) {
-                    sparqlLines.push(sparqlLine);
-                    originalSparqlLines.push(sparqlLine);
-                }
+                sparqlLines.push(sparqlLine);
+                originalSparqlLines.push(sparqlLine);
             }
         });
 

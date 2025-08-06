@@ -1,0 +1,26 @@
+superquery:
+PREFIX mqtt_broker: <http://localhost:1883/>
+PREFIX saref: <https://saref.etsi.org/core/>
+PREFIX dahccsensors: <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX : <https://rsp.js/>
+SELECT ?o ?o2
+WHERE 
+{{
+GRAPH :w1 {
+?s1 saref:hasValue ?o .
+?s1 saref:relatesToProperty dahccsensors:wearableX .
+}}
+UNION
+{
+GRAPH :w2 {
+?s2 saref:hasValue ?o2 .
+?s2 saref:relatesToProperty dahccsensors:smartphoneX .
+}}
+}
+subquery:
+PREFIX : <http://www.example.org/>
+
+SELECT * WHERE {
+	?s a :Person .
+	?s :hasAge ?age .
+}

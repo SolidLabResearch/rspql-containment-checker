@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { RSPQLParser } from "../parser/RSPQLParser";
 import { ContainmentChecker } from "./ContainmentChecker";
 
 describe("Testing the containment checker class", () => {
@@ -257,4 +258,193 @@ WHERE {
     expect(result).toBe(true);
   })
 
+});
+
+test("checking containment with different subqueries inside of a query", async () => {
+  const query = `
+  PREFIX mqtt_broker: <mqtt://localhost:1883/>
+PREFIX saref: <https://saref.etsi.org/core/>
+PREFIX dahccsensors: <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX : <https://rsp.js>
+REGISTER RStream <output> AS
+SELECT ?avgCombinedX ?avgCombinedX2
+FROM NAMED WINDOW :w1 ON STREAM mqtt_broker:wearableX [RANGE 10 STEP 2]
+FROM NAMED WINDOW :w2 ON STREAM mqtt_broker:smartphoneX [RANGE 10 STEP 2]
+WHERE {
+    {
+        SELECT (?o AS ?avgCombinedX)
+        WHERE {
+            WINDOW :w1 {
+                ?s saref:hasValue ?o .
+                ?s saref:relatesToProperty dahccsensors:wearableX .
+            }
+        }
+    }
+    {
+        SELECT (?o2 AS ?avgCombinedX2)
+        WHERE {
+            WINDOW :w2 {
+                ?s2 saref:hasValue ?o2 .
+                ?s2 saref:relatesToProperty dahccsensors:smartphoneX .
+            }
+        }
+    }
+}
+  `;
+
+  const containmentChecker = new ContainmentChecker();
+  const result = await containmentChecker.checkContainment(query, query);
+  expect(result).toBe(true);
+});
+
+test("check containment for a subquery containing query and a normal query", async () => {
+  const query2 = `
+                PREFIX mqtt_broker: <mqtt://localhost:1883/>
+    PREFIX saref: <https://saref.etsi.org/core/>
+PREFIX dahccsensors: <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX : <https://rsp.js> 
+REGISTER RStream <output> AS
+SELECT ((?o2) AS ?avgSmartphoneX)
+FROM NAMED WINDOW :w2 ON STREAM mqtt_broker:smartphoneX [RANGE 60000 STEP 60000]
+WHERE {
+    WINDOW :w2 {
+        ?s2 saref:hasValue ?o2 .
+        ?s2 saref:relatesToProperty dahccsensors:smartphoneX .
+    }
+}
+    `;
+
+  const query = `
+  PREFIX mqtt_broker: <mqtt://localhost:1883/>
+PREFIX saref: <https://saref.etsi.org/core/>
+PREFIX dahccsensors: <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX : <https://rsp.js>
+REGISTER RStream <output> AS
+SELECT ?avgCombinedX ?avgCombinedX2
+FROM NAMED WINDOW :w1 ON STREAM mqtt_broker:wearableX [RANGE 60000 STEP 60000]
+FROM NAMED WINDOW :w2 ON STREAM mqtt_broker:smartphoneX [RANGE 60000 STEP 60000]
+WHERE {
+    {
+        SELECT (?o AS ?avgCombinedX)
+        WHERE {
+            WINDOW :w1 {
+                ?s saref:hasValue ?o .
+                ?s saref:relatesToProperty dahccsensors:wearableX .
+            }
+        }
+    }
+    {
+        SELECT (?o2 AS ?avgCombinedX2)
+        WHERE {
+            WINDOW :w2 {
+                ?s2 saref:hasValue ?o2 .
+                ?s2 saref:relatesToProperty dahccsensors:smartphoneX .
+            }
+        }
+    }
+}
+  `;
+
+  const biggerQuery = `
+PREFIX mqtt_broker: <mqtt://localhost:1883/>
+PREFIX saref: <https://saref.etsi.org/core/>
+PREFIX dahccsensors: <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX : <https://rsp.js>
+REGISTER RStream <output> AS
+SELECT *
+FROM NAMED WINDOW <mqtt://localhost:1883/wearableX> ON STREAM mqtt_broker:wearableX [RANGE 120000 STEP 60000]
+FROM NAMED WINDOW <mqtt://localhost:1883/smartphoneX> ON STREAM mqtt_broker:smartphoneX [RANGE 120000 STEP 60000]
+WHERE {{
+WINDOW <mqtt://localhost:1883/wearableX> {
+    {
+        SELECT (AVG(?o) AS ?avgCombinedX)
+        WHERE {
+            WINDOW <mqtt://localhost:1883/wearableX> {
+                ?s saref:hasValue ?o .
+                ?s saref:relatesToProperty dahccsensors:wearableX .
+            }
+        }
+}}}
+    UNION{
+WINDOW <mqtt://localhost:1883/smartphoneX> {
+    {
+        SELECT (AVG(?o2) AS ?avgCombinedX2)
+        WHERE {
+            WINDOW <mqtt://localhost:1883/smartphoneX> {
+                ?s2 saref:hasValue ?o2 .
+                ?s2 saref:relatesToProperty dahccsensors:smartphoneX .
+            }
+        }
+}
+}}
+}
+`;
+
+  const works_query = `
+PREFIX mqtt_broker: <mqtt://localhost:1883/>
+PREFIX saref: <https://saref.etsi.org/core/>
+PREFIX dahccsensors: <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX : <https://rsp.js>
+
+REGISTER RStream <output> AS
+SELECT (AVG(?v1) AS ?avgWearableX) (AVG(?v2) AS ?avgSmartphoneX)
+FROM NAMED WINDOW :w1 ON STREAM mqtt_broker:wearableX [RANGE 60000 STEP 60000]
+FROM NAMED WINDOW :w2 ON STREAM mqtt_broker:smartphoneX [RANGE 60000 STEP 60000]
+WHERE {
+  WINDOW :w1 {
+    ?s1 saref:hasValue ?v1 .
+    ?s1 saref:relatesToProperty dahccsensors:wearableX .
+  }
+  WINDOW :w2 {
+    ?s2 saref:hasValue ?v2 .
+    ?s2 saref:relatesToProperty dahccsensors:smartphoneX .
+  }
+}
+`;
+
+const new_query = 
+`
+PREFIX mqtt_broker: <mqtt://localhost:1883/>
+PREFIX saref: <https://saref.etsi.org/core/>
+PREFIX dahccsensors: <https://dahcc.idlab.ugent.be/Homelab/SensorsAndActuators/>
+PREFIX : <https://rsp.js>
+REGISTER RStream <output> AS
+SELECT ?avgCombinedX ?avgCombinedX2
+FROM NAMED WINDOW <mqtt://localhost:1883/wearableX> ON STREAM mqtt_broker:wearableX [RANGE 120000 STEP 60000]
+FROM NAMED WINDOW <mqtt://localhost:1883/smartphoneX> ON STREAM mqtt_broker:smartphoneX [RANGE 120000 STEP 60000]
+WHERE {
+  WINDOW <mqtt://localhost:1883/wearableX> {
+    {
+      SELECT (AVG(?o) AS ?avgCombinedX)
+      WHERE {
+        WINDOW <mqtt://localhost:1883/wearableX> {
+          ?s saref:hasValue ?o .
+          ?s saref:relatesToProperty dahccsensors:wearableX .
+        }
+      }
+    }
+  }
+}
+`
+
+
+  let parser = new RSPQLParser().parse(works_query).sparql;
+  console.log("Parsed query:", parser);
+
+  const query2Parser = new RSPQLParser().parse(query2).sparql;
+  console.log("Parsed query2:", query2Parser);
+
+  const containmentChecker = new ContainmentChecker();
+  const result = await containmentChecker.checkContainment(new_query, biggerQuery);
+  // expect(result).toBe(true);
+  console.log("Containment result:", result);
+
+
+
+  // Uncomment the following line if you want to check the containment in the opposite direction
+  // const result2 = await containmentChecker.checkContainment(query2, query);
+  // expect(result2).toBe(true);
+  // // expect(result).toBe(true);
+  // const result2 = await containmentChecker.checkContainment(query, query2);
+  // expect(result2).toBe(false);
 });
