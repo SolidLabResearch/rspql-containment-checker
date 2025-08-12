@@ -11,6 +11,7 @@
 #include <array>
 
 extern int yydebug;
+extern int yyparse();
 
 using namespace std;
 
