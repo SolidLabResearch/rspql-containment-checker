@@ -15,9 +15,48 @@
 */
 
 import { SpecsOptions } from "../types/Types";
-import { SPeCSWrapper } from "./SPeCSWrapper";
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import { resolveSPeCSExecutable, SPeCSWrapper } from "./SPeCSWrapper";
 
 describe("SPeCSWrapper", () => {
+    afterEach(() => {
+        delete process.env.SPECS_EXECUTABLE;
+    });
+
+    it("resolves the deterministic bundled executable with diagnostics", () => {
+        const diagnostics = resolveSPeCSExecutable();
+        expect(diagnostics.executablePath).toMatch(/specs\/src\/specs$/);
+        expect(diagnostics.platform).toBe(process.platform);
+        expect(diagnostics.architecture).toBe(process.arch);
+        expect(diagnostics.source).toBe('bundled');
+    });
+
+    it("uses an explicit environment override during resolution", () => {
+        process.env.SPECS_EXECUTABLE = process.execPath;
+        const diagnostics = resolveSPeCSExecutable();
+        expect(diagnostics.executablePath).toBe(path.resolve(process.execPath));
+        expect(diagnostics.source).toBe('environment');
+    });
+
+    it("fails clearly when the requested executable is absent", () => {
+        expect(() => resolveSPeCSExecutable('/definitely/not/a/specs/executable')).toThrow(
+            'SPeCS executable is missing or not executable'
+        );
+    });
+
+    it("propagates a spawn failure instead of reporting ordinary non-containment", async () => {
+        const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'specs-wrapper-'));
+        const wrapper = new SPeCSWrapper();
+        try {
+            await expect(wrapper.runSPeCS({ superquery: 'SELECT * WHERE {}', subquery: 'SELECT * WHERE {}' }, temporaryDirectory))
+                .rejects.toThrow('SPeCS could not execute');
+        } finally {
+            fs.rmdirSync(temporaryDirectory);
+        }
+    });
+
     it("should throw an error if superquery or subquery is not provided", async () => {
         const wrapper = new SPeCSWrapper();
         await expect(wrapper.runSPeCS({ superquery: "", subquery: "" })).rejects.toThrow("Both superquery and subquery are required.");
@@ -26,11 +65,10 @@ describe("SPeCSWrapper", () => {
     it("should run SPeCS with valid options", async () => {
         const wrapper = new SPeCSWrapper();
         const options: SpecsOptions = {
-            superquery: "superquery",
-            subquery: "subquery",
-            schema: "schema",
-            rename: "true",
-            qc: "true",
+            superquery: "PREFIX ex: <http://example.org/> SELECT ?x WHERE { ?x a ex:Person . }",
+            subquery: "PREFIX ex: <http://example.org/> SELECT ?x WHERE { ?x a ex:Person . ?x ex:hasAge ex:One . }",
+            rename: true,
+            qc: true,
         };
 
         const result = await wrapper.runSPeCS(options);
