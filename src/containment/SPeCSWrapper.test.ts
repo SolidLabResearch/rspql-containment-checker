@@ -67,8 +67,8 @@ describe("SPeCSWrapper", () => {
         const options: SpecsOptions = {
             superquery: "PREFIX ex: <http://example.org/> SELECT ?x WHERE { ?x a ex:Person . }",
             subquery: "PREFIX ex: <http://example.org/> SELECT ?x WHERE { ?x a ex:Person . ?x ex:hasAge ex:One . }",
-            rename: true,
-            qc: true,
+            rename: "true",
+            qc: "true",
         };
 
         const result = await wrapper.runSPeCS(options);
